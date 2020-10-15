@@ -17,6 +17,9 @@ C_DEPS :=
 SUBDIRS := \
 CMSIS/core \
 StdPeriph_Driver/src \
+src/BMP280 \
+src/I2C \
+src/UART \
 src \
 startup \
 

@@ -1,0 +1,1 @@
+src/BMP280/BMP280.o: ../src/BMP280/BMP280.c

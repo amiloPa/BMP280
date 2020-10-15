@@ -4,17 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../CMSIS/core/core_cm3.c 
+../src/I2C/I2C.c 
 
 OBJS += \
-./CMSIS/core/core_cm3.o 
+./src/I2C/I2C.o 
 
 C_DEPS += \
-./CMSIS/core/core_cm3.d 
+./src/I2C/I2C.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-CMSIS/core/%.o: ../CMSIS/core/%.c
+src/I2C/%.o: ../src/I2C/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)
