@@ -2822,17 +2822,85 @@ Discarded input sections
  .ARM.attributes
                 0x00000000       0x33 StdPeriph_Driver/src/stm32f10x_wwdg.o
  .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
+ .group         0x00000000        0xc src/BMP280/BMP280.o
  .text          0x00000000        0x0 src/BMP280/BMP280.o
  .data          0x00000000        0x0 src/BMP280/BMP280.o
  .bss           0x00000000        0x0 src/BMP280/BMP280.o
- .debug_info    0x00000000       0x21 src/BMP280/BMP280.o
- .debug_abbrev  0x00000000       0x13 src/BMP280/BMP280.o
+ .debug_info    0x00000000       0x9a src/BMP280/BMP280.o
+ .debug_abbrev  0x00000000       0x5f src/BMP280/BMP280.o
  .debug_aranges
                 0x00000000       0x18 src/BMP280/BMP280.o
- .debug_macro   0x00000000       0x11 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x1ac src/BMP280/BMP280.o
  .debug_macro   0x00000000      0xa6c src/BMP280/BMP280.o
- .debug_line    0x00000000       0x37 src/BMP280/BMP280.o
- .debug_str     0x00000000     0x2ccf src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x56 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x22 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x22 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x8e src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x51 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0xef src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x6a src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x1df src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x69f src/BMP280/BMP280.o
+ .debug_macro   0x00000000     0x7dbe src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x2df src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x144 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x3cf src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0xc8 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x17a src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0xac src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x3ad src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x9a src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x2cf src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x279 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x2ac src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x2b1 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x64 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x82 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x3e2 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x58 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x341 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x2c4 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x711 src/BMP280/BMP280.o
+ .debug_macro   0x00000000      0x220 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x34 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x8b src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0x35 src/BMP280/BMP280.o
+ .debug_macro   0x00000000       0xa6 src/BMP280/BMP280.o
+ .debug_line    0x00000000      0x574 src/BMP280/BMP280.o
+ .debug_str     0x00000000    0x4d473 src/BMP280/BMP280.o
  .comment       0x00000000       0x80 src/BMP280/BMP280.o
  .ARM.attributes
                 0x00000000       0x33 src/BMP280/BMP280.o

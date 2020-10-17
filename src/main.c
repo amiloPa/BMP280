@@ -21,6 +21,8 @@ void GPIO_Conf(void);
 void NVIC_Conf(void);
 void SysTick_Conf(void);
 
+volatile uint8_t flag;
+
 int main(void)
 {
 
@@ -110,18 +112,18 @@ void NVIC_Conf(void)
 
 void GPIO_Conf(void)
 {
-	GPIO_InitTypeDef GPIOInit;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-
-	GPIO_StructInit(&GPIOInit);
-
-	//Definicja pinów dla I2C GPIOB_PIN6 - SCL, GPIOB_PIN7 - SDA
-	GPIOInit.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-	GPIOInit.GPIO_Mode = GPIO_Mode_AF_OD;
-	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
-	 GPIO_Init(GPIOB, &GPIOInit);
+//	GPIO_InitTypeDef GPIOInit;
+//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+//	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+//
+//	GPIO_StructInit(&GPIOInit);
+//
+//	//Definicja pinów dla I2C GPIOB_PIN6 - SCL, GPIOB_PIN7 - SDA
+//	GPIOInit.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+//	GPIOInit.GPIO_Mode = GPIO_Mode_AF_OD;
+//	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
+//	 GPIO_Init(GPIOB, &GPIOInit);
 
 
 
@@ -131,6 +133,18 @@ void GPIO_Conf(void)
 
 __attribute__((interrupt)) void SysTick_Handler(void)
 {
+	static uint16_t counter = 0;
+
+	if(counter == 1000)
+	{
+		flag = 1;
+		counter = 0;
+	}
+	else
+	{
+		counter++;
+	}
+
 //	BB(GPIOC->ODR, PC13) ^= 1;
 
 }
