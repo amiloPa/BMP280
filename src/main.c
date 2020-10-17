@@ -12,6 +12,7 @@
 #include "stm32f10x.h"
 #include "UART/UART.h"
 #include "I2C/I2C.h"
+#include "BMP280/BMP280.h"
 			
 ErrorStatus HSEStartUpStatus;
 #define F_PCLK2  72000000
@@ -31,7 +32,11 @@ int main(void)
 	I2C_Conf(400);
 	UART_Conf(UART_BAUD);
 	SysTick_Conf();
-	void NVIC_Conf(void);
+	NVIC_Conf();
+
+	BMP280_Conf();
+
+	BMP280_ReadTP();
 
 	while (1);
 }

@@ -84,7 +84,7 @@ StdPeriph_Driver/src/%.o: ../StdPeriph_Driver/src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)
-	arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -mfloat-abi=soft -DSTM32 -DSTM32F1 -DSTM32F103C8Tx -DDEBUG -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/inc" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/device" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/core" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/src/I2C" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/src/UART" -O0 -g3 -Wall -fmessage-length=0 -ffunction-sections -c -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -mfloat-abi=soft -DSTM32 -DSTM32F1 -DSTM32F103C8Tx -DDEBUG -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/inc" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/device" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/core" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/src/I2C" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/src/UART" -I"E:/STM32_ARM/MY_LIBRARIES/BMP280/src/BMP280" -O0 -g3 -Wall -fmessage-length=0 -ffunction-sections -c -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
