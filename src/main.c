@@ -38,7 +38,15 @@ int main(void)
 
 	BMP280_ReadTP();
 
-	while (1);
+	while (1)
+	{
+		if(flag)
+		{
+			BMP280_ReadTP();
+			flag = 0;
+		}
+
+	}
 }
 
 

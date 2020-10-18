@@ -29,11 +29,12 @@
 #define BMP280_ULTRAHIGHRES		5	// Pressure oversampling x16		-> resolution 20
 
 // Temperature resolution -> osrs_t[2:0] -> addres register 0xF4 bits: 5,6,7
-#define BMP280_TEMPERATURE_16BIT 1	//Temperature oversampling x 1
-#define BMP280_TEMPERATURE_17BIT 2	//Temperature oversampling x 2
-#define BMP280_TEMPERATURE_18BIT 3	//Temperature oversampling x 4
-#define BMP280_TEMPERATURE_19BIT 4	//Temperature oversampling x 8
-#define BMP280_TEMPERATURE_20BIT 5	//Temperature oversampling x 16
+#define BMP280_TEMPERATURE_SKIPPED 	0	//Temperature oversampling skipped
+#define BMP280_TEMPERATURE_16BIT 	1	//Temperature oversampling x 1
+#define BMP280_TEMPERATURE_17BIT 	2	//Temperature oversampling x 2
+#define BMP280_TEMPERATURE_18BIT 	3	//Temperature oversampling x 4
+#define BMP280_TEMPERATURE_19BIT 	4	//Temperature oversampling x 8
+#define BMP280_TEMPERATURE_20BIT 	5	//Temperature oversampling x 16
 
 // IIR filter ->  filter[2:0]  -> addres register 0xF5 bits: 2, 3, 4
 #define BMP280_FILTER_OFF	0	// Filter OFF
@@ -108,25 +109,28 @@ typedef union {
 
 typedef struct {
 	TCOEF coef;
-	int32_t adc_T;	// raw value of temperature
-	int32_t adc_P;	// raw value of presasure
+	int32_t adc_T;				// raw value of temperature
+	uint32_t adc_P;				// raw value of presasure
+	uint8_t compensate_status;	// set "1" if division by zero
 
 
 	// ----- temperature -----
-	int32_t temperature;		// x 0,1 degree C
-	int8_t t1;				// before comma
+	int32_t temperature;	// x 0,1 degree C
+	int8_t 	t1;				// before comma
 	uint8_t t2;				// after comma
 
 #if USE_STRING
-	char temp2str[10];		// tepmerature as string
+	char temp2str[6];		// tepmerature as string
 #endif
 
 	// ----- pressure -----
 
-	int preasure;			// calue of calculated pressure
+	uint32_t 	preasure;		// calue of calculated pressure
+	int16_t 		p1;				// before comma
+	uint8_t 	p2;				// after comma
 
 #if USE_STRING
-	char pressure2str[10];		// pressure as string
+	char pressure2str[4];		// pressure as string
 #endif
 } TBMP;
 
@@ -136,5 +140,5 @@ extern TBMP bmp;
 
 void BMP280_Conf (void);
 void BMP280_ReadTP(void);
-
+int my_abs(int x);
 #endif /* BMP280_BMP280_H_ */
