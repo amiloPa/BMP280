@@ -13,6 +13,7 @@
 #include "UART/UART.h"
 #include "I2C/I2C.h"
 #include "BMP280/BMP280.h"
+#include "common_var.h"
 			
 ErrorStatus HSEStartUpStatus;
 #define F_PCLK2  72000000
@@ -23,6 +24,9 @@ void NVIC_Conf(void);
 void SysTick_Conf(void);
 
 volatile uint8_t flag;
+uint32_t start_measure;
+uint16_t result_time;
+char measure_time[15];
 
 int main(void)
 {
@@ -34,7 +38,7 @@ int main(void)
 	SysTick_Conf();
 	NVIC_Conf();
 
-	BMP280_Conf();
+	while (!BMP280_Conf());
 
 	BMP280_ReadTP();
 
@@ -42,8 +46,35 @@ int main(void)
 	{
 		if(flag)
 		{
-			BMP280_ReadTP();
 			flag = 0;
+
+			start_measure = source_time;
+			BMP280_ReadTP();
+			result_time = source_time - start_measure;
+
+//			if(BMP280_ReadTP())
+//			{
+//				uart_puts("sensor error");
+//				uart_puts("\n\r");
+//			}
+//			else
+//			{
+//
+//				uart_puts("\n\r");
+				uart_puts(bmp.temp2str);
+				uart_puts("  ");
+				uart_puts(bmp.pressure2str);
+//				uart_puts("\n\r");
+//			}
+
+
+			uart_puts("  ");
+			itoa(result_time, measure_time,10);
+			uart_puts("measure take = ");
+			uart_puts(measure_time);
+			uart_puts("ms");
+			uart_puts("\n\r");
+
 		}
 
 	}
@@ -157,6 +188,7 @@ __attribute__((interrupt)) void SysTick_Handler(void)
 	{
 		counter++;
 	}
+	source_time++;
 
 //	BB(GPIOC->ODR, PC13) ^= 1;
 

@@ -10,6 +10,9 @@
 
 #include "stm32f10x.h"
 #include "../I2C/I2C.h"
+#include <string.h>
+#include <stdlib.h>
+#include "../common_var.h"
 
 //select protocol
 #define BMP280_SPI	0
@@ -58,11 +61,24 @@
 #define BMP280_STANDBY_MS_2000	6
 #define BMP280_STANDBY_MS_4000	7
 
-
 //soft reset ->  reset[7:0] ->	If the value 0xB6 is written to the register,
 //								the device is reset using the complete power-on-reset procedure
 
-#define BMP280_SOFT_RESET		0xB6
+#define BMP280_SOFTWARE_RESET 0xB6
+
+// definisions of minimum and maximum rav values for temperature and pressure
+#define BMP280_ST_ADC_T_MIN	(int32_t)0x00000
+#define BMP280_ST_ADC_T_MAX (int32_t)0xFFFF0
+#define BMP280_ST_ADC_P_MIN (int32_t)0x00000
+#define BMP280_ST_ADC_P_MAX (int32_t)0xFFFF0
+
+
+#define SIZE_OF_CONF_UNION 24
+
+
+typedef enum {T_lower_limit = 1, T_over_limit = 2, P_lower_limit = 3, P_over_limit = 4 } ERR_BOUNDARIES;
+typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
+
 
 
 
@@ -70,6 +86,9 @@
 // 3-wire SPI interface -> spi3w_en[0]  -> addres register 0xF5 bits: 0
 #define BMP280_SPI_3_WIRE	1
 #endif
+
+
+
 
 typedef union {
 	uint8_t bt[2];
@@ -87,7 +106,8 @@ typedef union {
 extern CONF conf_BMP280;
 
 typedef union {
-	uint8_t bt[24];
+	uint8_t  bt[SIZE_OF_CONF_UNION];
+	uint16_t bt2[SIZE_OF_CONF_UNION/2];
 
 	struct {
 		uint16_t dig_T1;
@@ -110,8 +130,11 @@ typedef union {
 typedef struct {
 	TCOEF coef;
 	int32_t adc_T;				// raw value of temperature
-	uint32_t adc_P;				// raw value of presasure
+	uint32_t adc_P;				// raw value of pressure
+	uint8_t err_conf;			// in configurations registers is some error
 	uint8_t compensate_status;	// set "1" if division by zero
+	uint8_t err_boundaries_T;	// if raw value of temperature is lower or over limits
+	uint8_t err_boundaries_P;	// if raw value of pressure is lower or over limits
 
 
 	// ----- temperature -----
@@ -120,14 +143,14 @@ typedef struct {
 	uint8_t t2;				// after comma
 
 #if USE_STRING
-	char temp2str[6];		// tepmerature as string
+	char temp2str[7];		// tepmerature as string
 #endif
 
 	// ----- pressure -----
 
 	uint32_t 	preasure;		// calue of calculated pressure
-	int16_t 		p1;				// before comma
-	uint8_t 	p2;				// after comma
+	int16_t 	p1;				// before comma
+	//uint8_t 	p2;				// after comma
 
 #if USE_STRING
 	char pressure2str[4];		// pressure as string
@@ -138,7 +161,6 @@ typedef struct {
 extern TBMP bmp;
 
 
-void BMP280_Conf (void);
-void BMP280_ReadTP(void);
-int my_abs(int x);
+uint8_t BMP280_Conf (void);
+uint8_t BMP280_ReadTP(void);
 #endif /* BMP280_BMP280_H_ */

@@ -10,10 +10,18 @@
 
 TBMP bmp;
 CONF conf_BMP280;
+uint32_t current_time;
+
+void check_boundaries (void);
+void soft_reset (void);
+int my_abs(int x);
 
 //void BMP280_Conf (TCOEF *bmp)
-void BMP280_Conf (void)
+uint8_t BMP280_Conf (void)
 {
+	uint8_t buf[2];
+	uint8_t i;
+
 	conf_BMP280.mode 		= BMP280_FORCEDMODE;
 	conf_BMP280.osrs_p 		= BMP280_ULTRAHIGHRES;
 	conf_BMP280.osrs_t		= BMP280_TEMPERATURE_20BIT;
@@ -22,48 +30,72 @@ void BMP280_Conf (void)
 	conf_BMP280.filter		= BMP280_FILTER_OFF;
 	conf_BMP280.t_sb		= BMP280_STANDBY_MS_0_5;
 
+	soft_reset();	// make a reset to clear previous setting
+	if (current_time == 0)	current_time = source_time; // get system time
+
+	if(source_time <= (current_time + 2) ) return 0;	//wait 2ms aster software reset
+
 #if BMP280_I2C
 	I2C_WRITE(BMP280_ADDR, 0xF4, 2, conf_BMP280.bt);	// write configurations bytes
+	I2C_READ(BMP280_ADDR, 0xF4, 2, buf);				// read seted register
 	I2C_READ(BMP280_ADDR, 0x88, 24, bmp.coef.bt);		// read compensation parameters
 #endif
 
-//    uint8_t tmp;
-//    for( uint8_t i=0; i<26; i+=2 ) {
-//    	tmp = bmp.coef.bt[i];
-//    	bmp.coef.bt[i] = bmp.coef.bt[i+1];
-//    	bmp.coef.bt[i+1] = tmp;
-//    }
+
+#if BMP280_SPI
+
+#endif
+
+
+	// ----- check if all calibration coefficients are diferent from 0 -----
+	for( i = 0; i < (SIZE_OF_CONF_UNION/2); i++)
+	{
+		if(bmp.coef.bt2[i] == 0)
+		{
+			bmp.err_conf = calib_reg;
+			return 2;
+		}
+	}
+
+	// ----- check if set configuration registers are that same as readed -----
+	for(i = 0; i < 2; i++)
+	{
+		if(buf[i] != conf_BMP280.bt[i])
+		{
+			if(!bmp.err_conf) 	bmp.err_conf = both;
+			else 				bmp.err_conf = config_reg;
+			return 2;
+		}
+	}
+
+	return 1;
 }
 
-void BMP280_ReadTP(void)
+uint8_t BMP280_ReadTP(void)
 {
 	uint8_t temp[6];
 	uint8_t divisor;
 	int32_t var1, var2, t_fine;
 	uint32_t p;
 
+	// ----- if occured some error during parameterization sensor don't do any measure -----
+	if(bmp.err_conf) return 1;
+
+
 	I2C_READ(BMP280_ADDR, 0xF7, 6, temp);
 
-	// ----- calculate temperature -----
-	switch(conf_BMP280.osrs_t)
-	{
-	case(BMP280_TEMPERATURE_16BIT):
-			bmp.adc_T = (temp[3] << 8) | temp[4];
-		break;
-	case(BMP280_TEMPERATURE_17BIT):
-			bmp.adc_T = (temp[3] << 9)  | (temp[4] << 1) | (temp[5] >> 7);
-		break;
-	case(BMP280_TEMPERATURE_18BIT):
-			bmp.adc_T = (temp[3] << 10) | (temp[4] << 2) | (temp[5] >> 6);
-		break;
-	case(BMP280_TEMPERATURE_19BIT):
-			bmp.adc_T = (temp[3] << 11) | (temp[4] << 3) | (temp[5] >> 5);
-		break;
-	case(BMP280_TEMPERATURE_20BIT):
-			bmp.adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);;
-		break;
-	}
+	bmp.adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);;
+	bmp.adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);;
 
+
+	// ----- check boundaries -----
+	check_boundaries();
+
+	// ----- if raw values are lower or over the limits, function is intermittent and returning 1  -----
+	if ((bmp.err_boundaries_T != 0) || ( bmp.err_boundaries_P != 0)) return 1;
+
+
+	// ----- calculate temperature -----
 	var1 = ((((bmp.adc_T >> 3) - ((int32_t)bmp.coef.dig_T1 << 1))) * ((int32_t)bmp.coef.dig_T2)) >> 11;
 	var2 = (((((bmp.adc_T >> 4) - ((int32_t)bmp.coef.dig_T1)) * ((bmp.adc_T >> 4) - ((int32_t)bmp.coef.dig_T1))) >> 12) * ((int32_t)bmp.coef.dig_T3)) >> 14;
 
@@ -77,40 +109,24 @@ void BMP280_ReadTP(void)
 	bmp.t1 = (int32_t)bmp.temperature / (int8_t)divisor;
 	bmp.t2 = my_abs((uint32_t)bmp.temperature % (uint8_t)divisor);
 
+
+	// ----- prepare string with value of temperature -----
 #if USE_STRING
 	uint8_t len;
-	itoa(bmp.t1, &bmp.temp2str[0],10);
+	if(bmp.t1 >= 0) bmp.temp2str[0] = ' ';
+	else			bmp.temp2str[0] = '-';
+
+	itoa(bmp.t1, &bmp.temp2str[1],10);
 	len = strlen(bmp.temp2str);
 	bmp.temp2str[len++] = ',';
+	if( bmp.t2 < 10) bmp.temp2str[len++] = '0';
 	itoa(bmp.t2, &bmp.temp2str[len++],10);
 #endif
 
 	// ----- calculate pressure -----
-	switch(conf_BMP280.osrs_p)
-	{
-	case(BMP280_ULTRALOWPOWER):
-			bmp.adc_P = (temp[0] << 8) | temp[1];
-		break;
-	case(BMP280_LOWPOWER):
-			bmp.adc_P = (temp[0] << 9)  | (temp[1] << 1) | (temp[2] >> 7);
-		break;
-	case(BMP280_STANDARD):
-			bmp.adc_P = (temp[0] << 10) | (temp[1] << 2) | (temp[2] >> 6);
-		break;
-	case(BMP280_HIGHRES):
-			bmp.adc_P = (temp[0] << 11) | (temp[1] << 3) | (temp[2] >> 5);
-		break;
-	case(BMP280_ULTRAHIGHRES):
-			bmp.adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);;
-		break;
-	}
-
-
 	bmp.compensate_status = 0;
-	divisor = 0;
 	var1 = 0;
 	var2 = 0;
-
 
 	var1 = (((int32_t)t_fine) >> 1) - (int32_t)64000;
 	var2 = (((var1 >> 2) * (var1 >> 2)) >> 11 ) * ((int32_t)bmp.coef.dig_P6);
@@ -119,7 +135,11 @@ void BMP280_ReadTP(void)
 	var1 = (((bmp.coef.dig_P3 * (((var1 >> 2) * (var1 >> 2)) >> 13 )) >> 3) + ((((int32_t)bmp.coef.dig_P2) * var1) >> 1)) >> 18;
 	var1 =((((32768 + var1)) * ((int32_t)bmp.coef.dig_P1)) >> 15);
 
-	if (var1 == 0) bmp.compensate_status = 1;
+	if (var1 == 0) //if dividing by 0, function is intermittent and and returning 1
+	{
+		bmp.compensate_status = 1;
+		return 1;
+	}
 
 	p = (((uint32_t)(((int32_t)1048576) - bmp.adc_P) - (var2 >> 12))) * 3125;
 
@@ -134,24 +154,50 @@ void BMP280_ReadTP(void)
 
 	bmp.preasure = (uint32_t)p;
 	bmp.p1 =  (uint32_t)bmp.preasure / (uint8_t)100;
-	bmp.p2 =  (uint32_t)bmp.preasure % (uint8_t)100;
+	//bmp.p2 =  (uint32_t)bmp.preasure % (uint8_t)100;
 
 
+	// ----- prepare string with value of pressure -----
 #if USE_STRING
 	itoa(bmp.p1, &bmp.pressure2str[0],10);
 #endif
 
 
-	if(conf_BMP280.mode == BMP280_FORCEDMODE)				// prepare values for next measure
+	// ----- measure and prepare values for the next reading -----
+	if(conf_BMP280.mode == BMP280_FORCEDMODE)
 	{
 		#if BMP280_I2C
 			I2C_WRITE(BMP280_ADDR, 0xF4, 1, conf_BMP280.bt);	// start force mode
 		#endif
 	}
 
+	return 0;// if everything is OK return 0
 }
 
 int my_abs(int x)
 {
     return x < 0 ? -x : x;
+}
+
+
+void check_boundaries (void)
+{
+	bmp.err_boundaries_T = 0;
+	bmp.err_boundaries_P = 0;
+
+	if		(bmp.adc_T <= BMP280_ST_ADC_T_MIN) bmp.err_boundaries_T = T_lower_limit;
+	else if (bmp.adc_T >= BMP280_ST_ADC_T_MAX) bmp.err_boundaries_T = T_over_limit;
+
+	if		(bmp.adc_P <= BMP280_ST_ADC_P_MIN) 	bmp.err_boundaries_P = P_lower_limit;
+	else if (bmp.adc_P >= BMP280_ST_ADC_P_MAX) 	bmp.err_boundaries_P = P_over_limit;
+}
+
+void soft_reset (void)
+{
+#ifdef BMP280_I2C
+	I2C_WRITE(BMP280_ADDR, 0xE0, 1, (const void*)BMP280_SOFTWARE_RESET);
+#endif
+
+#ifdef BMP280_SPI
+#endif
 }
