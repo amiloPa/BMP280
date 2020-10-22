@@ -1,4 +1,5 @@
-src/BMP280/BMP280.o: ../src/BMP280/BMP280.c ../src/BMP280/BMP280.h \
+src/COMMON/common_var.o: ../src/COMMON/common_var.c \
+ ../src/COMMON/common_var.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/device/stm32f10x.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/core/core_cm3.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/device/system_stm32f10x.h \
@@ -25,10 +26,9 @@ src/BMP280/BMP280.o: ../src/BMP280/BMP280.c ../src/BMP280/BMP280.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_tim.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_usart.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
- E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h \
- ../src/BMP280/../I2C/I2C.h ../src/BMP280/../COMMON/common_var.h
+ E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h
 
-../src/BMP280/BMP280.h:
+../src/COMMON/common_var.h:
 
 E:/STM32_ARM/MY_LIBRARIES/BMP280/CMSIS/device/stm32f10x.h:
 
@@ -83,7 +83,3 @@ E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_usart.h:
 E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_wwdg.h:
 
 E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h:
-
-../src/BMP280/../I2C/I2C.h:
-
-../src/BMP280/../COMMON/common_var.h:

@@ -12,13 +12,14 @@
 #include "../I2C/I2C.h"
 #include <string.h>
 #include <stdlib.h>
-#include "../common_var.h"
+#include "../COMMON/common_var.h"
 
 //select protocol
 #define BMP280_SPI	0
 #define BMP280_I2C	1
 
 #define USE_STRING 1
+#define BMP280_INCLUDE_STATUS 0
 
 #define BMP280_ADDR 		0xEC	// Sensor addres -> SDO pin is connected to GND
 //#define BMP280_ADDR 		0xEE	// Sensor addres -> SDO pin is connected to VCC
@@ -73,12 +74,16 @@
 #define BMP280_ST_ADC_P_MAX (int32_t)0xFFFF0
 
 
+#define BMP280_MEASURING_STATUS 0x1
+#define BMP280_IM_UPDATE_STATUS 0x8
+
+
 #define SIZE_OF_CONF_UNION 24
 
 
 typedef enum {T_lower_limit = 1, T_over_limit = 2, P_lower_limit = 3, P_over_limit = 4 } ERR_BOUNDARIES;
 typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
-
+typedef enum {im_update = 1, measuring= 2} STATUS;
 
 
 
@@ -129,6 +134,8 @@ typedef union {
 
 typedef struct {
 	TCOEF coef;
+	uint8_t measuring_staus;	// status of measuring sensor
+	uint8_t im_update_staus ;	// status of im update sensor
 	int32_t adc_T;				// raw value of temperature
 	uint32_t adc_P;				// raw value of pressure
 	uint8_t err_conf;			// in configurations registers is some error
@@ -138,7 +145,7 @@ typedef struct {
 
 
 	// ----- temperature -----
-	int32_t temperature;	// x 0,1 degree C
+	int32_t temperature;	// x 0,1 degree C7.6
 	int8_t 	t1;				// before comma
 	uint8_t t2;				// after comma
 

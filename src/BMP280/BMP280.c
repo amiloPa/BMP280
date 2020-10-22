@@ -15,8 +15,9 @@ uint32_t current_time;
 void check_boundaries (void);
 void soft_reset (void);
 int my_abs(int x);
+void get_status (void);
+uint8_t bmp280_compute_meas_time(void);
 
-//void BMP280_Conf (TCOEF *bmp)
 uint8_t BMP280_Conf (void)
 {
 	uint8_t buf[2];
@@ -24,6 +25,8 @@ uint8_t BMP280_Conf (void)
 
 	conf_BMP280.mode 		= BMP280_FORCEDMODE;
 	conf_BMP280.osrs_p 		= BMP280_ULTRAHIGHRES;
+//	conf_BMP280.mode 		= BMP280_NORMALMODE;
+//	conf_BMP280.osrs_p 		= BMP280_ULTRALOWPOWER;
 	conf_BMP280.osrs_t		= BMP280_TEMPERATURE_20BIT;
 	conf_BMP280.spi3w_en	= 0;
 	conf_BMP280.reserved	= 0;
@@ -45,7 +48,6 @@ uint8_t BMP280_Conf (void)
 #if BMP280_SPI
 
 #endif
-
 
 	// ----- check if all calibration coefficients are diferent from 0 -----
 	for( i = 0; i < (SIZE_OF_CONF_UNION/2); i++)
@@ -71,6 +73,8 @@ uint8_t BMP280_Conf (void)
 	return 1;
 }
 
+
+
 uint8_t BMP280_ReadTP(void)
 {
 	uint8_t temp[6];
@@ -81,8 +85,22 @@ uint8_t BMP280_ReadTP(void)
 	// ----- if occured some error during parameterization sensor don't do any measure -----
 	if(bmp.err_conf) return 1;
 
+#if BMP280_INCLUDE_STATUS
+	// ----- get status of sensor -----
+	get_status();
 
+	// ----- if sensor is in measuring or im_update status, wait up to the finishing and after that read measures -----
+	if( (bmp.measuring_staus)  || (bmp.im_update_staus)) return 2;
+
+#endif
+
+#if BMP280_I2C
 	I2C_READ(BMP280_ADDR, 0xF7, 6, temp);
+#endif
+
+#if BMP280_SPI
+
+#endif
 
 	bmp.adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);;
 	bmp.adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);;
@@ -93,7 +111,6 @@ uint8_t BMP280_ReadTP(void)
 
 	// ----- if raw values are lower or over the limits, function is intermittent and returning 1  -----
 	if ((bmp.err_boundaries_T != 0) || ( bmp.err_boundaries_P != 0)) return 1;
-
 
 	// ----- calculate temperature -----
 	var1 = ((((bmp.adc_T >> 3) - ((int32_t)bmp.coef.dig_T1 << 1))) * ((int32_t)bmp.coef.dig_T2)) >> 11;
@@ -169,14 +186,13 @@ uint8_t BMP280_ReadTP(void)
 		#if BMP280_I2C
 			I2C_WRITE(BMP280_ADDR, 0xF4, 1, conf_BMP280.bt);	// start force mode
 		#endif
+
+		#if BMP280_SPI
+
+		#endif
 	}
 
 	return 0;// if everything is OK return 0
-}
-
-int my_abs(int x)
-{
-    return x < 0 ? -x : x;
 }
 
 
@@ -199,5 +215,42 @@ void soft_reset (void)
 #endif
 
 #ifdef BMP280_SPI
+
 #endif
+}
+
+void get_status (void)
+{
+	uint8_t *status;
+
+#ifdef BMP280_I2C
+	I2C_READ(BMP280_ADDR, 0xF3, 1, &status);
+#endif
+
+#ifdef BMP280_SPI
+
+#endif
+
+	bmp.measuring_staus =  *status & BMP280_MEASURING_STATUS;
+	bmp.im_update_staus =  *status & BMP280_IM_UPDATE_STATUS;
+}
+
+
+//measurement time in milliseconds for the active configuration
+uint8_t bmp280_compute_meas_time(void)
+{
+    uint32_t period = 0;
+    uint32_t t_dur = 0, p_dur = 0, p_startup = 0;
+    const uint32_t startup = 1000, period_per_osrs = 2000; /* Typical timings in us. Maximum is +15% each */
+
+        t_dur = period_per_osrs * ((UINT32_C(1) << conf_BMP280.osrs_t) >> 1);
+        p_dur = period_per_osrs * ((UINT32_C(1) << conf_BMP280.osrs_p) >> 1);
+        p_startup = (conf_BMP280.osrs_p) ? 500 : 0;
+
+        /* Increment the value to next highest integer if greater than 0.5 */
+        period = startup + t_dur + p_startup + p_dur + 500;
+        period /= 1000; /* Convert to milliseconds */
+
+
+    return (uint8_t)period;
 }

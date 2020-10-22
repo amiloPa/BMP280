@@ -18,6 +18,7 @@ SUBDIRS := \
 CMSIS/core \
 StdPeriph_Driver/src \
 src/BMP280 \
+src/COMMON \
 src/I2C \
 src/UART \
 src \

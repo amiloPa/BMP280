@@ -8,6 +8,14 @@
 #ifndef COMMON_VAR_H_
 #define COMMON_VAR_H_
 
+#include "stm32f10x.h"
+
 uint32_t source_time;
+
+uint32_t measure_time_time;
+
+
+int my_abs(int x);
+uint32_t my_abs_uint(uint32_t x);
 
 #endif /* COMMON_VAR_H_ */

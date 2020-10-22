@@ -13,7 +13,7 @@
 #include "UART/UART.h"
 #include "I2C/I2C.h"
 #include "BMP280/BMP280.h"
-#include "common_var.h"
+#include "COMMON/common_var.h"
 			
 ErrorStatus HSEStartUpStatus;
 #define F_PCLK2  72000000
@@ -25,11 +25,16 @@ void SysTick_Conf(void);
 
 volatile uint8_t flag;
 uint32_t start_measure;
+uint32_t allow_for_measure;
 uint16_t result_time;
 char measure_time[15];
 
 int main(void)
 {
+
+	uint8_t result;
+	//char temp[2];
+//	char source_time_tab[12];
 
 	RCC_Conf();
 	GPIO_Conf();
@@ -46,34 +51,41 @@ int main(void)
 	{
 		if(flag)
 		{
-			flag = 0;
-
 			start_measure = source_time;
-			BMP280_ReadTP();
-			result_time = source_time - start_measure;
+			result = BMP280_ReadTP();
+			if( 1 == result )
+			{
+				uart_puts("sensor error");
+				uart_puts("\n\r");
+			}
+			else if ( 2 == result)
+			{
+			}
+			else
+			{
+				flag = 0;
+				result_time = source_time - start_measure;
 
-//			if(BMP280_ReadTP())
-//			{
-//				uart_puts("sensor error");
-//				uart_puts("\n\r");
-//			}
-//			else
-//			{
-//
-//				uart_puts("\n\r");
+//				itoa(my_abs_uint(measure_time_time -allow_for_measure), source_time_tab,10);
+
 				uart_puts(bmp.temp2str);
 				uart_puts("  ");
 				uart_puts(bmp.pressure2str);
-//				uart_puts("\n\r");
-//			}
+
+				uart_puts("  ");
+				itoa(result_time, measure_time,10);
+				uart_puts("measure take = ");
+				uart_puts(measure_time);
+				uart_puts("ms");
+//				uart_puts("    ");
+//				uart_puts("measure = ");
+//				uart_puts(source_time_tab);
+//				uart_puts("ms");
+				uart_puts("\n\r");
+			}
 
 
-			uart_puts("  ");
-			itoa(result_time, measure_time,10);
-			uart_puts("measure take = ");
-			uart_puts(measure_time);
-			uart_puts("ms");
-			uart_puts("\n\r");
+
 
 		}
 
@@ -181,6 +193,7 @@ __attribute__((interrupt)) void SysTick_Handler(void)
 
 	if(counter == 1000)
 	{
+		allow_for_measure = source_time;
 		flag = 1;
 		counter = 0;
 	}
