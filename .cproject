@@ -40,6 +40,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/I2C}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/UART}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/BMP280}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/SPI}&quot;"/>
 								</option>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.220237391" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.311699160" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>
@@ -116,6 +117,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/I2C}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/UART}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/BMP280}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BMP280/src/SPI}&quot;"/>
 								</option>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c.772705808" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.c"/>
 								<inputType id="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s.1537206813" superClass="fr.ac6.managedbuild.tool.gnu.cross.c.compiler.input.s"/>

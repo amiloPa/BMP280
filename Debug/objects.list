@@ -25,6 +25,7 @@
 "src/BMP280/BMP280.o"
 "src/COMMON/common_var.o"
 "src/I2C/I2C.o"
+"src/SPI/SPI.o"
 "src/UART/UART.o"
 "src/main.o"
 "src/syscalls.o"

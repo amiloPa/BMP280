@@ -4,17 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/UART/UART.c 
+../src/SPI/SPI.c 
 
 OBJS += \
-./src/UART/UART.o 
+./src/SPI/SPI.o 
 
 C_DEPS += \
-./src/UART/UART.d 
+./src/SPI/SPI.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-src/UART/%.o: ../src/UART/%.c
+src/SPI/%.o: ../src/SPI/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo $(PWD)

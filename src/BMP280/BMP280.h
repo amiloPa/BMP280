@@ -10,16 +10,18 @@
 
 #include "stm32f10x.h"
 #include "../I2C/I2C.h"
+#include "../SPI/SPI.h"
 #include <string.h>
 #include <stdlib.h>
 #include "../COMMON/common_var.h"
 
 //select protocol
-#define BMP280_SPI	0
-#define BMP280_I2C	1
+#define BMP280_SPI 1
+#define BMP280_I2C  0
 
-#define USE_STRING 1
-#define BMP280_INCLUDE_STATUS 0
+#define USE_STRING 1				// allow for preparing of string with temperature and pressure values
+#define BMP280_INCLUDE_STATUS 0		// allow for waiting up to sensor will be in standby mode (standby time)
+#define BMP280_ALTITUDE 	205 	// current sensor altitude above sea level at the measurement site [m]
 
 #define BMP280_ADDR 		0xEC	// Sensor addres -> SDO pin is connected to GND
 //#define BMP280_ADDR 		0xEE	// Sensor addres -> SDO pin is connected to VCC
@@ -64,7 +66,6 @@
 
 //soft reset ->  reset[7:0] ->	If the value 0xB6 is written to the register,
 //								the device is reset using the complete power-on-reset procedure
-
 #define BMP280_SOFTWARE_RESET 0xB6
 
 // definisions of minimum and maximum rav values for temperature and pressure
@@ -86,9 +87,8 @@ typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
 typedef enum {im_update = 1, measuring= 2} STATUS;
 
 
-
-#if BMP280_SPI
 // 3-wire SPI interface -> spi3w_en[0]  -> addres register 0xF5 bits: 0
+#if BMP280_SPI
 #define BMP280_SPI_3_WIRE	1
 #endif
 
@@ -159,15 +159,20 @@ typedef struct {
 	int16_t 	p1;				// before comma
 	//uint8_t 	p2;				// after comma
 
+	// ----- sea pressure -----
+	uint32_t sea_pressure_redu;
+
+
 #if USE_STRING
-	char pressure2str[4];		// pressure as string
+	char pressure2str[5];		// pressure as string
 #endif
 } TBMP;
 
-//TCOEF BMP_CD;	// Calibration data
 extern TBMP bmp;
 
 
-uint8_t BMP280_Conf (void);
-uint8_t BMP280_ReadTP(void);
+
+uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp);
+uint8_t BMP280_ReadTP(TBMP *bmp);
+
 #endif /* BMP280_BMP280_H_ */

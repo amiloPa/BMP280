@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include startup/subdir.mk
 -include src/UART/subdir.mk
+-include src/SPI/subdir.mk
 -include src/I2C/subdir.mk
 -include src/COMMON/subdir.mk
 -include src/BMP280/subdir.mk

@@ -14,6 +14,7 @@
 #include "I2C/I2C.h"
 #include "BMP280/BMP280.h"
 #include "COMMON/common_var.h"
+#include "SPI/SPI.h"
 			
 ErrorStatus HSEStartUpStatus;
 #define F_PCLK2  72000000
@@ -38,21 +39,30 @@ int main(void)
 
 	RCC_Conf();
 	GPIO_Conf();
+
+#if (BMP280_I2C == 1)
 	I2C_Conf(400);
+#endif
+
+#if BMP280_SPI
+	SPI_Conf();
+#endif
+
 	UART_Conf(UART_BAUD);
 	SysTick_Conf();
 	NVIC_Conf();
 
-	while (!BMP280_Conf());
 
-	BMP280_ReadTP();
+	while (1 == BMP280_Conf(&conf_BMP280, &bmp));
+
+	BMP280_ReadTP(&bmp);
 
 	while (1)
 	{
 		if(flag)
 		{
 			start_measure = source_time;
-			result = BMP280_ReadTP();
+			result = BMP280_ReadTP(&bmp);
 			if( 1 == result )
 			{
 				uart_puts("sensor error");
