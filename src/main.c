@@ -34,13 +34,11 @@ int main(void)
 {
 
 	uint8_t result;
-	//char temp[2];
-//	char source_time_tab[12];
 
 	RCC_Conf();
 	GPIO_Conf();
 
-#if (BMP280_I2C == 1)
+#if BMP280_I2C
 	I2C_Conf(400);
 #endif
 
@@ -55,8 +53,6 @@ int main(void)
 
 	while (1 == BMP280_Conf(&conf_BMP280, &bmp));
 
-	BMP280_ReadTP(&bmp);
-
 	while (1)
 	{
 		if(flag)
@@ -67,6 +63,7 @@ int main(void)
 			{
 				uart_puts("sensor error");
 				uart_puts("\n\r");
+				flag = 0;
 			}
 			else if ( 2 == result)
 			{
@@ -178,18 +175,18 @@ void NVIC_Conf(void)
 
 void GPIO_Conf(void)
 {
-//	GPIO_InitTypeDef GPIOInit;
-//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	GPIO_InitTypeDef GPIOInit;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 //	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 //	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-//
-//	GPIO_StructInit(&GPIOInit);
-//
-//	//Definicja pinów dla I2C GPIOB_PIN6 - SCL, GPIOB_PIN7 - SDA
-//	GPIOInit.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-//	GPIOInit.GPIO_Mode = GPIO_Mode_AF_OD;
-//	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
-//	 GPIO_Init(GPIOB, &GPIOInit);
+
+	GPIO_StructInit(&GPIOInit);
+
+	//Definicja pinów dla I2C GPIOB_PIN6 - SCL, GPIOB_PIN7 - SDA
+	GPIOInit.GPIO_Pin = GPIO_Pin_13;
+	GPIOInit.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
+	 GPIO_Init(GPIOC, &GPIOInit);
 
 
 
@@ -200,6 +197,7 @@ void GPIO_Conf(void)
 __attribute__((interrupt)) void SysTick_Handler(void)
 {
 	static uint16_t counter = 0;
+	static uint8_t status = 0;
 
 	if(counter == 1000)
 	{
@@ -213,6 +211,16 @@ __attribute__((interrupt)) void SysTick_Handler(void)
 	}
 	source_time++;
 
-//	BB(GPIOC->ODR, PC13) ^= 1;
+	if(0 == status)
+	{
+		GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+		status = 1;
+	}
+	else
+	{
+		GPIO_SetBits(GPIOC, GPIO_Pin_13);;
+		status = 0;
+	}
+
 
 }

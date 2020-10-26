@@ -18,6 +18,9 @@ void get_status (TBMP *bmp);				// read statuses of sensor
 uint8_t bmp280_compute_meas_time(void);		// measurement time in milliseconds for the active configuration
 void pressure_at_sea_level(TBMP *bmp);		// calculating pressure reduced to sea level
 
+void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data);
+void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data);
+
 
 /****************************************************************************/
 /*      setting function configurations of sensor					        */
@@ -26,6 +29,7 @@ uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp)
 {
 	uint8_t buf[2];
 	uint8_t i;
+
 
 	sensor->mode 		= BMP280_FORCEDMODE;
 	sensor->osrs_p 		= BMP280_ULTRAHIGHRES;
@@ -41,20 +45,11 @@ uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp)
 
 	if(source_time <= (current_time + 3) ) return 1;	//wait 3ms aster software reset
 
-#if (BMP280_I2C == 1)
-	I2C_WRITE(BMP280_ADDR, 0xF4, 2, sensor->bt);	// write configurations bytes
-	I2C_READ(BMP280_ADDR, 0xF4, 2, buf);			// read seted register
-	I2C_READ(BMP280_ADDR, 0x88, 24, bmp->coef.bt);	// read compensation parameters
-#endif
 
+	BMP280_write_data(BMP280_ADDR, 0xF4, 2, sensor->bt);		// write configurations bytes
+	BMP280_read_data(BMP280_ADDR, 0xF4,  2, buf);				// read set register
+	BMP280_read_data(BMP280_ADDR, 0x88, 24, bmp->coef.bt);		// read compensation parameters
 
-#if (BMP280_SPI == 1)
-	SPI_SendData(0xF4, sensor->bt, 2 );
-	SPI_ReceiveData(0xF4, &buf, 2 );
-	SPI_ReceiveData(0x88, bmp->coef.bt, 24 );
-
-
-#endif
 
 	// ----- check if all calibration coefficients are diferent from 0 -----
 	for( i = 0; i < (SIZE_OF_CONF_UNION/2); i++)
@@ -71,7 +66,7 @@ uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp)
 	{
 		if(buf[i] != sensor->bt[i])
 		{
-			if(!bmp->err_conf) 	bmp->err_conf = both;
+			if(bmp->err_conf) 	bmp->err_conf = both;
 			else 				bmp->err_conf = config_reg;
 			return 2;
 		}
@@ -103,13 +98,8 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 
 #endif
 
-#if (BMP280_I2C == 1)
-	I2C_READ(BMP280_ADDR, 0xF7, 6, temp);
-#endif
 
-#if (BMP280_SPI == 1)
-
-#endif
+	BMP280_read_data(BMP280_ADDR, 0xF7, 6, (uint8_t *)&temp);	// read set register
 
 	bmp->adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);;
 	bmp->adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);;
@@ -194,13 +184,7 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 	// ----- measure and prepare values for the next reading -----
 	if(conf_BMP280.mode == BMP280_FORCEDMODE)
 	{
-		#if (BMP280_I2C == 1)
-			I2C_WRITE(BMP280_ADDR, 0xF4, 1, conf_BMP280.bt);	// start force mode
-		#endif
-
-		#if (BMP280_SPI == 1)
-
-		#endif
+		BMP280_write_data(BMP280_ADDR, 0xF4, 1, conf_BMP280.bt);		// write configurations bytes
 	}
 
 	// ----- calculate a preasure sea level -----
@@ -231,13 +215,7 @@ void check_boundaries (TBMP *bmp)
 /****************************************************************************/
 void soft_reset (void)
 {
-#ifdef BMP280_I2C
-	I2C_WRITE(BMP280_ADDR, 0xE0, 1, (const void*)BMP280_SOFTWARE_RESET);
-#endif
-
-#if (BMP280_SPI == 1)
-
-#endif
+	BMP280_write_data(BMP280_ADDR, 0xE0, 1, (uint8_t*)BMP280_SOFTWARE_RESET);		// write configurations bytes
 }
 
 
@@ -246,15 +224,9 @@ void soft_reset (void)
 /****************************************************************************/
 void get_status (TBMP *bmp)
 {
-	uint8_t *status;
+	uint8_t *status = 0;
 
-#ifdef BMP280_I2C
-	I2C_READ(BMP280_ADDR, 0xF3, 1, &status);
-#endif
-
-#ifdef (BMP280_SPI == 1)
-
-#endif
+	BMP280_read_data(BMP280_ADDR, 0xF3, 1, status);	// read set register
 
 	bmp->measuring_staus =  *status & BMP280_MEASURING_STATUS;
 	bmp->im_update_staus =  *status & BMP280_IM_UPDATE_STATUS;
@@ -299,3 +271,35 @@ void pressure_at_sea_level(TBMP *bmp){
         st_baryczny = (800000 * (1000 + 4 * t_sr) / (p_sr));              						// calculation of more accurate value of baric degree
         bmp->sea_pressure_redu = bmp->preasure + (100000 * BMP280_ALTITUDE / (st_baryczny)); 	// calculation of more accurate value of pressure for sea level
 }
+
+
+
+
+void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data)
+{
+#if BMP280_I2C
+	I2C_WRITE(SLA, register_addr, size, Data);
+#endif
+
+#if BMP280_SPI
+	SPI_SendData(register_addr, Data, size);
+#endif
+
+}
+
+
+
+void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data)
+{
+
+#if BMP280_I2C
+	I2C_READ(SLA, register_addr, size, Data);
+#endif
+
+
+#if BMP280_SPI
+	SPI_ReceiveData(register_addr, Data, size );
+#endif
+
+}
+

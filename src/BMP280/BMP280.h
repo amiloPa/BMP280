@@ -17,7 +17,7 @@
 
 //select protocol
 #define BMP280_SPI 1
-#define BMP280_I2C  0
+#define BMP280_I2C 0
 
 #define USE_STRING 1				// allow for preparing of string with temperature and pressure values
 #define BMP280_INCLUDE_STATUS 0		// allow for waiting up to sensor will be in standby mode (standby time)
