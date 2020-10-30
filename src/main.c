@@ -34,8 +34,10 @@ int main(void)
 {
 
 	uint8_t result;
+	uint8_t result_BMP_conf;
 
 	RCC_Conf();
+	SysTick_Conf();
 	GPIO_Conf();
 
 #if BMP280_I2C
@@ -47,53 +49,93 @@ int main(void)
 #endif
 
 	UART_Conf(UART_BAUD);
-	SysTick_Conf();
+
 	NVIC_Conf();
 
 
-	while (1 == BMP280_Conf(&conf_BMP280, &bmp));
+
+	do
+	{
+		result_BMP_conf = BMP280_Conf(&conf_BMP280, &bmp);
+	}
+	while(result_BMP_conf == 3);
+
+
 
 	while (1)
 	{
 		if(flag)
 		{
-			start_measure = source_time;
-			result = BMP280_ReadTP(&bmp);
-			if( 1 == result )
+			flag = 0;
+
+			if(result_BMP_conf)
 			{
-				uart_puts("sensor error");
+				uart_puts("Sensor configuration error:");
+				if(bmp.err_conf == calib_reg)  uart_puts(" calibration coefficients includes zero value,");
+				if(bmp.err_conf == config_reg) uart_puts(" configuration registers error,");
+				if(bmp.err_conf == both) uart_puts(" calibration coefficients includes zero value and configuration registers error,");
 				uart_puts("\n\r");
-				flag = 0;
-			}
-			else if ( 2 == result)
-			{
 			}
 			else
 			{
-				flag = 0;
-				result_time = source_time - start_measure;
+				start_measure = source_time;
+				result = BMP280_ReadTP(&bmp);
 
-//				itoa(my_abs_uint(measure_time_time -allow_for_measure), source_time_tab,10);
+				switch(result)
+				{
+				case 1:
+					uart_puts("Sensor error. Initialization phase didn't go properly.");
+					uart_puts("\n\r");
+					flag = 0;
+					break;
 
-				uart_puts(bmp.temp2str);
-				uart_puts("  ");
-				uart_puts(bmp.pressure2str);
+				case 2:
+					break;
 
-				uart_puts("  ");
-				itoa(result_time, measure_time,10);
-				uart_puts("measure take = ");
-				uart_puts(measure_time);
-				uart_puts("ms");
-//				uart_puts("    ");
-//				uart_puts("measure = ");
-//				uart_puts(source_time_tab);
-//				uart_puts("ms");
-				uart_puts("\n\r");
+				case 3:
+					switch(bmp.err_boundaries_T)
+					{
+					case T_lower_limit:
+						uart_puts(" Measured raw value of temperature is lower than minimum value (0x00000),");
+						break;
+					case T_over_limit:
+						uart_puts(" Measured raw value of temperature is over than maximum value (0xFFFF0),");
+						break;
+					}
+
+					switch(bmp.err_boundaries_T)
+					{
+					case P_lower_limit:
+						uart_puts(" Measured raw value of pressure is lower than minimum value (0x00000),");
+						break;
+					case P_over_limit:
+						uart_puts(" Measured raw value of pressure is over than maximum value (0xFFFF0),");
+						break;
+					}
+					break;
+				case 4:
+					uart_puts(" Try to divide by 0 (measuring is intermittent.)");
+					break;
+
+				default:
+					result_time = source_time - start_measure;
+
+					uart_puts(bmp.temp2str);
+					uart_puts("  ");
+					uart_puts(bmp.pressure2str);
+
+					uart_puts("  ");
+					itoa(result_time, measure_time,10);
+					uart_puts("measure take = ");
+					uart_puts(measure_time);
+					uart_puts("ms");
+	//				uart_puts("    ");
+	//				uart_puts("measure = ");
+	//				uart_puts(source_time_tab);
+	//				uart_puts("ms");
+					uart_puts("\n\r");
+				}
 			}
-
-
-
-
 		}
 
 	}
@@ -105,8 +147,9 @@ void SysTick_Conf (void)
 
 #define SysTick_Frequency 9000000 // 9MHz
 
-	SysTick_Config(F_PCLK2/8/1000);
-	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;
+//	SysTick_Config(F_PCLK2/8/1000);
+//	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;
+	SysTick_Config(8000000/800);
 
 }
 
@@ -139,26 +182,28 @@ void RCC_Conf(void)
 	  // PCLK2 = HCLK
 	  RCC_PCLK2Config(RCC_HCLK_Div1);
 
-	  // PCLK1 = HCLK/2
-	  RCC_PCLK1Config(RCC_HCLK_Div2);
-
-	  // PLLCLK = 8MHz * 9 = 72 MHz
-	  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
-
-	  // Wlacz PLL
-	  RCC_PLLCmd(ENABLE);
-
-	  // Czekaj az PLL poprawnie sie uruchomi
-	  while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
-
-	  // PLL bedzie zrodlem sygnalu zegarowego
-	  RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-
-	  // Czekaj az PLL bedzie sygnalem zegarowym systemu
-	  while(RCC_GetSYSCLKSource() != 0x08);
+//	  // PCLK1 = HCLK/2
+//	  RCC_PCLK1Config(RCC_HCLK_Div2);
+//
+//	  // PLLCLK = 8MHz * 9 = 72 MHz
+//	  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+//
+//	  // Wlacz PLL
+//	  RCC_PLLCmd(ENABLE);
+//
+//	  // Czekaj az PLL poprawnie sie uruchomi
+//	  while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+//
+//	  // PLL bedzie zrodlem sygnalu zegarowego
+//	  RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+//
+//	  // Czekaj az PLL bedzie sygnalem zegarowym systemu
+//	  while(RCC_GetSYSCLKSource() != 0x08);
 
 	  //W³¹czenie systemu nadzoru sygna³u taktuj¹cego
 	  //RCC_ClockSecuritySystemCmd(ENABLE);
+
+	  RCC_SYSCLKConfig(RCC_SYSCLKSource_HSE);
   }
 
 //  Wlacz taktowanie GPIOB
