@@ -13,26 +13,26 @@
 volatile uint8_t ascii_line;
 
 
-// definiujemy w koñcu nasz bufor UART_RxBuf
+// Definition of UART_RxBuf receiving buffer
 volatile char UART_RxBuf[UART_RX_BUF_SIZE];
-// definiujemy indeksy okreœlaj¹ce iloœæ danych w buforze
-volatile uint8_t UART_RxHead; // indeks oznaczaj¹cy „g³owê wê¿a”
-volatile uint8_t UART_RxTail; // indeks oznaczaj¹cy „ogon wê¿a”
+// Index definition which determine the amount of data in buffer
+volatile uint8_t UART_RxHead; // Index which determine the "head of snake"
+volatile uint8_t UART_RxTail; // Index which determine the "tail of snake"
 
 
 
-// definiujemy w koñcu nasz bufor UART_RxBuf
+// Definition of UART_TxBuf transmit buffer
 volatile char UART_TxBuf[UART_TX_BUF_SIZE];
-// definiujemy indeksy okreœlaj¹ce iloœæ danych w buforze
-volatile uint8_t UART_TxHead; // indeks oznaczaj¹cy „g³owê wê¿a”
-volatile uint8_t UART_TxTail; // indeks oznaczaj¹cy „ogon wê¿a”
+// Index definition which determine the amount of data in buffer
+volatile uint8_t UART_TxHead; // Index which determine the "head of snake"
+volatile uint8_t UART_TxTail; // Index which determine the "tail of snake"
 
 
-// wskaŸnik do funkcji callback dla zdarzenia UART_RX_STR_EVENT()
+// a pointer to a callback for the event UART_RX_STR_EVENT()
 static void (*uart_rx_str_event_callback)(char * pBuf);
 
 
-// funkcja do rejestracji funkcji zwrotnej w zdarzeniu UART_RX_STR_EVENT()
+// function for registering a callback function in an event UART_RX_STR_EVENT()
 void register_uart_str_rx_event_callback(void (*callback)(char * pBuf)) {
 	uart_rx_str_event_callback = callback;
 }
@@ -45,27 +45,27 @@ void UART_Conf(uint32_t BaudRate)
 	GPIO_InitTypeDef GPIOInit;
 
 	//*******************************************************************
-	//Ustawienie zegarów mikroprocesora
+	// Setting of microprocessor clocks
 	//*******************************************************************
 	RCC_APB2PeriphClockCmd(RCC_APB2ENR_USART1EN | RCC_APB2ENR_IOPAEN, ENABLE);
 
 	//*******************************************************************
-	//Ustawienie pinów mikroprocesora
+	// Setting of microprocessor pins for handling UART
 	//*******************************************************************
-	// Konfiguracja PA9 jako Tx
+	// Configuration PA9 as Tx
 	GPIOInit.GPIO_Pin = GPIO_Pin_9;
 	GPIOInit.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIOInit);
 
-	// Konfiguracja PA10 jako Rx
+	// Configuration PA10 as Rx
 	GPIOInit.GPIO_Pin = GPIO_Pin_10;
 	GPIOInit.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(GPIOA, &GPIOInit);
 
 
 	//*******************************************************************
-	//Ustawienie komunikacji USART
+	// Setting of UART communication
 	//*******************************************************************
 
 	USARTInit.USART_BaudRate = BaudRate;
@@ -82,13 +82,13 @@ void UART_Conf(uint32_t BaudRate)
 
 
 	//*******************************************************************
-	//W³aczenie wektora przerwañ dla USART1
+	// Enabling interrupt vector for USART1
 	//*******************************************************************
 	//NVIC_EnableIRQ( USART1_IRQn);	// RM -> 205 page -> table "Vector table for other STM32F10xxx device" -> position 37
 
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-  	// Wlacz przerwanie od USART1
+  	// Enabling interrupt from USART1
   	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
   	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
   	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -108,26 +108,26 @@ void UART_Conf(uint32_t BaudRate)
 
 		  data = (char)USART_ReceiveData(USART1);
 
-		  // obliczamy nowy indeks „g³owy wê¿a”
+		  // calculation a new indeks of "head snake"
 		  tmp_head = ( UART_RxHead + 1) & UART_RX_BUF_MASK;
 
-		  // sprawdzamy, czy w¹¿ nie zacznie zjadaæ w³asnego ogona
+		  // check that the snake will not start to eat its own tail
 		  if ( tmp_head == UART_RxTail )
 		  {
-			  // tutaj mo¿emy w jakiœ wygodny dla nas sposób obs³u¿yæ  b³¹d spowodowany
-			  // prób¹ nadpisania danych w buforze, mog³oby dojœæ do sytuacji gdzie
-			  // nasz w¹¿ zacz¹³by zjadaæ w³asny ogon
-			  // jednym z najbardziej oczywistych rozwi¹zañ jest np natychmiastowe
-			  // wyzerowanie zmiennej ascii_line lub sterowanie sprzêtow¹ lini¹
-			  // zajêtoœci bufora
+			  // here we can handle the error caused in some way convenient for us
+			  // trying to overwrite data in the buffer, it could get to a situation where
+			  // our snake would start to eat its own tail
+			  // one of the most obvious solutions is e.g. immediate
+			  // reset the ascii_line variable or control the hardware line
+			  // buffer busy
 			  UART_RxHead = UART_RxTail;
 		  } else
 		  {
 			  switch( data )
 			  {
-				  case 0:					// ignorujemy bajt = 0
-				  case 10: break;			// ignorujemy znak LF
-				  case 13: ascii_line++;	// sygnalizujemy obecnoœæ kolejnej linii w buforze
+				  case 0:					// ignore byte = 0
+				  case 10: break;			// ignore byte LF
+				  case 13: ascii_line++;	// signal the presence of the next line in the buffer
 				  default : UART_RxHead = tmp_head; UART_RxBuf[tmp_head] = data;
 
 				  uart_putc(UART_RxBuf[tmp_head]);
@@ -139,12 +139,12 @@ void UART_Conf(uint32_t BaudRate)
 
 	  if(USART_GetFlagStatus(USART1, USART_SR_TXE) != RESET)
 	  {
-		  // sprawdzamy czy indeksy s¹ ró¿ne
+		  // we check if the indexes are different
 		  if ( UART_TxHead != UART_TxTail )
 		  {
-			  // obliczamy i zapamiêtujemy nowy indeks ogona wê¿a (mo¿e siê zrównaæ z g³ow¹)
+			  // we calculate and remember the new index of the snake's tail (it can align with the head)
 			  UART_TxTail = (UART_TxTail + 1) & UART_TX_BUF_MASK;
-			  // zwracamy bajt pobrany z bufora  jako rezultat funkcji
+			  // we return the byte downloaded from the buffer as the result of the function
 			  #ifdef UART_DE_PORT
 			  UART_DE_NADAWANIE;
 			  #endif
@@ -155,14 +155,14 @@ void UART_Conf(uint32_t BaudRate)
 		  }
 		  else
 		  {
-			// zerujemy flagê przerwania wystêpuj¹cego gdy bufor pusty
+			// reset the interrupt flag that occurs when the buffer is empty
 			  USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
 		  }
 	  }
 
 }
 //***********************************************************************************************
-  // Zdarzenie do odbioru danych ³añcucha tekstowego z bufora cyklicznego
+  // An event to receive text string data from a circular buffer
   void UART_RX_STR_EVENT(char * rbuf)
   {
   	if( ascii_line ) {
@@ -176,51 +176,51 @@ void UART_Conf(uint32_t BaudRate)
   }
 
   //***********************************************************************************************
-  // definiujemy funkcjê dodaj¹c¹ jeden bajt do bufora cyklicznego
+  // we define a function that adds one byte to the circular buffer
   void uart_putc( char data )
   {
   	uint8_t tmp_head;
 
   		tmp_head  = (UART_TxHead + 1) & UART_TX_BUF_MASK;
 
-      // pêtla oczekuje je¿eli brak miejsca w buforze cyklicznym na kolejne znaki
+      // if there is no space in the circular buffer, the loop waits for subsequent characters
       while ( tmp_head == UART_TxTail ){}
 
       UART_TxBuf[tmp_head] = data;
       UART_TxHead = tmp_head;
 
-      // inicjalizujemy przerwanie wystêpuj¹ce, gdy bufor jest pusty, dziêki
-      // czemu w dalszej czêœci wysy³aniem danych zajmie siê ju¿ procedura
-      // obs³ugi przerwania
+      // initialize the interrupt that occurs when the buffer is empty, thanks
+             // what the procedure will take care of later on sending data
+             // interrupt handling
       USART_ITConfig(USART1, USART_IT_TXE, ENABLE);
   }
 
   //***********************************************************************************************
-  void uart_puts(char *s)		// wysy³a ³añcuch z pamiêci RAM na UART
+  void uart_puts(char *s)		// sends string from RAM to UART
   {
     register char c;
-    while ((c = *s++)) uart_putc(c);			// dopóki nie napotkasz 0 wysy³aj znak
+    while ((c = *s++)) uart_putc(c);			// until you encounter 0 send a character
   }
 
   //***********************************************************************************************
-  void uart_putint(int value, int radix)	// wysy³a na port szeregowy tekst
+  void uart_putint(int value, int radix)	// sends text to the serial port
   {
-  	char string[17];			// bufor na wynik funkcji itoa
-  	itoa(value, string, radix);		// konwersja value na ASCII
-  	uart_puts(string);			// wyœlij string na port szeregowy
+  	char string[17];				// buffer for the result of itoa function
+  	itoa(value, string, radix);		// convert value to ASCII
+  	uart_puts(string);				// send string to serial port
   }
 
   //***********************************************************************************************
-  // definiujemy funkcjê pobieraj¹c¹ jeden bajt z bufora cyklicznego
+  // we define a function that takes one byte from the circular buffer
   int uart_getc(void)
   {
   	int data = -1;
-      // sprawdzamy czy indeksy s¹ równe
+      // we check if the indexes are equal
       if ( UART_RxHead == UART_RxTail ) return data;
 
-      // obliczamy i zapamiêtujemy nowy indeks „ogona wê¿a” (mo¿e siê zrównaæ z g³ow¹)
+      // we calculate and remember the new index of the "snake's tail" (it may align with the head)
       UART_RxTail = (UART_RxTail + 1) & UART_RX_BUF_MASK;
-      // zwracamy bajt pobrany z bufora  jako rezultat funkcji
+      // we return the byte downloaded from the buffer as the result of the function
       data = UART_RxBuf[UART_RxTail];
 
       return data;

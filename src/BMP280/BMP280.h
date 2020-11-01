@@ -9,16 +9,16 @@
 #define BMP280_BMP280_H_
 
 #include "stm32f10x.h"
-#include "../I2C/I2C.h"
 #include "../SPI/SPI.h"
+#include "../I2C/I2C.h"
 #include <string.h>
 #include <stdlib.h>
 #include "../COMMON/common_var.h"
 
 // --------------------------------------------------------- //
 //select protocol
-#define BMP280_SPI 1
-#define BMP280_I2C 0
+#define BMP280_SPI 0
+#define BMP280_I2C 1
 
 // --------------------------------------------------------- //
 #define USE_STRING 1				// allow for preparing of string with temperature and pressure values

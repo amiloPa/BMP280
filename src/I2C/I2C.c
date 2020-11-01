@@ -34,8 +34,9 @@
 		I2C_Init(I2C1, &I2CInit);
 		I2C_Cmd(I2C1, ENABLE);
 	}
+#endif
 
-
+#if BMP280_I2C
 	//Ustawienie adresu pamiêci
 	void I2C_ADDRES(uint8_t SLA, uint32_t addr)
 	{
@@ -53,9 +54,9 @@
 	 while (I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTING) != SUCCESS);
 
 	}
+#endif
 
-
-
+#if BMP280_I2C
 	//Odczyt z pamiêci
 	void I2C_READ(uint8_t SLA, uint32_t addr,  int size, void* data)
 	{
@@ -92,8 +93,10 @@
 		  //Odczytaj dane z rejestru
 		  buffer[i] = I2C_ReceiveData(I2C1);
 	}
+#endif
 
 
+#if BMP280_I2C
 	//Zapis do pamiêci
 	void I2C_WRITE(uint8_t SLA, uint32_t addr, int size, const void* data)
 	{

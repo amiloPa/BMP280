@@ -15,38 +15,20 @@
 
 #define UART_RXB	128		/* Size of Rx buffer */
 #define UART_TXB	128		/* Size of Tx buffer */
-//#define F_PCLK2  72000000
-
 
 void UART_Conf(uint32_t BaudRate);
 
+#define UART_BAUD 115200	// define the speed of interest to us
 
-#define UART_BAUD 115200		// tu definiujemy interesuj¹c¹ nas prêdkoœæ
+#define UART_RX_BUF_SIZE 32	// we define a buffer of 32 bytes
+#define UART_RX_BUF_MASK ( UART_RX_BUF_SIZE - 1)	// we define a mask for our buffer
 
-
-// definicje na potrzeby RS485
-//#define UART_DE_PORT PORTD
-#define UART_DE_DIR DDRD
-#define UART_DE_BIT (1<<PD2)
-
-#define UART_DE_ODBIERANIE  UART_DE_PORT &= ~UART_DE_BIT
-#define UART_DE_NADAWANIE  UART_DE_PORT |= UART_DE_BIT
-
-
-#define UART_RX_BUF_SIZE 32 // definiujemy bufor o rozmiarze 32 bajtów
-// definiujemy maskê dla naszego bufora
-#define UART_RX_BUF_MASK ( UART_RX_BUF_SIZE - 1)
-
-#define UART_TX_BUF_SIZE 2 // definiujemy bufor o rozmiarze 16 bajtów
-// definiujemy maskê dla naszego bufora
-#define UART_TX_BUF_MASK ( UART_TX_BUF_SIZE - 1)
-
+#define UART_TX_BUF_SIZE 2 // we define a buffer of 16 bytes
+#define UART_TX_BUF_MASK ( UART_TX_BUF_SIZE - 1)	// we define a mask for our buffer
 
 extern volatile uint8_t ascii_line;
 
-
-// deklaracje funkcji publicznych
-
+// declarations of public functions
 int uart_getc(void);
 void uart_putc( char data );
 void uart_puts(char *s);
