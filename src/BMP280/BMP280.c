@@ -18,11 +18,13 @@ void get_status (TBMP *bmp);				// read statuses of sensor
 uint8_t bmp280_compute_meas_time(void);		// measurement time in milliseconds for the active configuration
 void pressure_at_sea_level(TBMP *bmp);		// calculating pressure reduced to sea level
 
-void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data);
-void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data);
+void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data);	// read data from sensor
+void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data);	// write data to sensor
+uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp);							// write configuration and check if saved configuration is equal to set
 
-uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp);
-
+#if CALCULATION_AVERAGE_TEMP
+	void calculation_average_temp(TBMP *bmp);	// calculate average temperature, No of samples to calculations is taken from No_OF_SAMPLES
+#endif
 
 /****************************************************************************/
 /*      setting function configurations of sensor					        */
@@ -59,7 +61,6 @@ uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp)
 	return result_of_check;	// if everything is OK return 0
 }
 
-
 /****************************************************************************/
 /*      read, check, calculate and prepare string for measured values       */
 /****************************************************************************/
@@ -69,6 +70,7 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 	uint8_t divisor;
 	int32_t var1, var2, t_fine;
 	uint32_t p;
+
 
 	// ----- if occured some error during parameterization sensor don't do any measure -----
 	if(bmp->err_conf) return 1;
@@ -81,7 +83,6 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 	if( (bmp.measuring_staus)  || (bmp.im_update_staus)) return 2;
 
 #endif
-
 
 	BMP280_read_data(BMP280_ADDR, 0xF7, 6, (uint8_t *)&temp);	// read set register
 
@@ -103,26 +104,39 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 
 	bmp->temperature  = (t_fine * 5 + 128) >> 8;
 
-	if(my_abs(bmp->temperature) > 999) 	divisor = 100;
+	if(my_abs(bmp->temperature) > 9) 	divisor = 100;
 	else 								divisor = 10;
+
 
 	bmp->t1 = (int32_t)bmp->temperature / (int8_t)divisor;
 	bmp->t2 = my_abs((uint32_t)bmp->temperature % (uint8_t)divisor);
-
 
 	// ----- prepare string with value of temperature -----
 #if USE_STRING
 	uint8_t len;
 
-	if(bmp->t1 >= 0) bmp->temp2str[0] = ' ';
-	else			bmp->temp2str[0] = '-';
+	#if CALCULATION_AVERAGE_TEMP
 
-	itoa(bmp->t1, &bmp->temp2str[1], 10);
-	len = strlen(bmp->temp2str);
-	bmp->temp2str[len++] = ',';
 
-	if( bmp->t2 < 10) bmp->temp2str[len++] = '0';
-	itoa(bmp->t2, &bmp->temp2str[len++],10);
+		// ----- calculation of average temperature -----
+		calculation_average_temp(bmp);
+
+		itoa(bmp->avearage_cel, &bmp->temp2str[0], 10);
+		len = strlen(bmp->temp2str);
+		bmp->temp2str[len++] = ',';
+
+		if( bmp->avearage_fract < 10) bmp->temp2str[len++] = '0';
+		itoa(bmp->avearage_fract, &bmp->temp2str[len++],10);
+
+	#else
+
+		itoa(bmp->t1, &bmp->temp2str[0], 10);
+		len = strlen(bmp->temp2str);
+		bmp->temp2str[len++] = ',';
+
+		if( bmp->t2 < 10) bmp->temp2str[len++] = '0';
+		itoa(bmp->t2, &bmp->temp2str[len++],10);
+	#endif
 
 #endif
 
@@ -177,7 +191,6 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 	return 0;	// if everything is OK return 0
 }
 
-
 /****************************************************************************/
 /*      check if read uncompensated values are in boundary MIN and MAX      */
 /****************************************************************************/
@@ -193,7 +206,6 @@ void check_boundaries (TBMP *bmp)
 	else if (bmp->adc_P >= BMP280_ST_ADC_P_MAX) bmp->err_boundaries_P = P_over_limit;
 }
 
-
 /****************************************************************************/
 /*      execute sensor reset by software							        */
 /****************************************************************************/
@@ -201,7 +213,6 @@ void soft_reset (void)
 {
 	BMP280_write_data(BMP280_ADDR, 0xE0, 1, (uint8_t*)BMP280_SOFTWARE_RESET);		// write configurations bytes
 }
-
 
 /****************************************************************************/
 /*      read statuses of sensor      										*/
@@ -216,12 +227,9 @@ void get_status (TBMP *bmp)
 	bmp->im_update_staus =  *status & BMP280_IM_UPDATE_STATUS;
 }
 
-
-
 /****************************************************************************/
 /*      measurement time in milliseconds for the active configuration       */
 /****************************************************************************/
-
 uint8_t bmp280_compute_meas_time(void)
 {
     uint32_t period = 0;
@@ -256,9 +264,9 @@ void pressure_at_sea_level(TBMP *bmp){
         bmp->sea_pressure_redu = bmp->preasure + (100000 * BMP280_ALTITUDE / (st_baryczny)); 	// calculation of more accurate value of pressure for sea level
 }
 
-
-
-
+/****************************************************************************/
+/*     in depend on selected protocol data are saved to sensor		        */
+/****************************************************************************/
 void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data)
 {
 #if BMP280_I2C
@@ -306,11 +314,11 @@ void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t
 
 }
 
-
-
+/****************************************************************************/
+/*      in depend on selected protocol data are readed from sensor	        */
+/****************************************************************************/
 void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data)
 {
-
 #if BMP280_I2C
 
 	  int i;
@@ -369,9 +377,11 @@ void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t
 #endif
 }
 
+/****************************************************************************/
+/*     write configuration and check if saved configuration is equal to set */
+/****************************************************************************/
 uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
 {
-
 	uint8_t buf[2];
 	uint8_t i;
 	uint8_t bt_temp[2];
@@ -379,7 +389,6 @@ uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
 	BMP280_write_data(BMP280_ADDR, 0xF4, 2, sensor->bt);		// write configurations bytes
 	BMP280_read_data(BMP280_ADDR, 0xF4,  2, buf);				// read set register
 	BMP280_read_data(BMP280_ADDR, 0x88, 24, bmp->coef.bt);		// read compensation parameters
-
 
 	// ----- check if all calibration coefficients are diferent from 0 -----
 	for( i = 0; i < (SIZE_OF_CONF_UNION/2); i++)
@@ -430,4 +439,46 @@ uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
 	return 0;
 }
 
+/****************************************************************************/
+/*     Calculate average temperature,										*/
+/* 	   No of samples to calculations is taken from No_OF_SAMPLES 			*/
+/****************************************************************************/
+#if CALCULATION_AVERAGE_TEMP
+	void calculation_average_temp(TBMP *bmp)
+	{
+		int16_t avearage_temp_value = 0;
+		static uint8_t i = 1;
+		uint8_t k;
+		uint8_t avearage_fract_temp;
+
+		if(i <= No_OF_SAMPLES)
+		{
+			if(bmp->t1 >= 0) bmp->smaples_of_temp[i-1] = 100 * bmp->t1 + bmp->t2;
+			else 			 bmp->smaples_of_temp[i-1] = -1 * (100 * my_abs(bmp->t1) + bmp->t2);
+		}
+		else
+		{
+			for (k = 1; k < i - 1; k++)
+			{
+				bmp->smaples_of_temp[k-1] = bmp->smaples_of_temp[k];
+			}
+
+			if(bmp->t1 >= 0) bmp->smaples_of_temp[--k] = 100 * bmp->t1 + bmp->t2;
+			else 			 bmp->smaples_of_temp[--k] = -1 * (100 * my_abs(bmp->t1) + bmp->t2);
+		}
+
+		for (k = 0; k < i - 1; k++)
+		{
+			avearage_temp_value += bmp->smaples_of_temp[k];
+		}
+
+		avearage_temp_value /= (i - 1);
+
+		bmp->avearage_cel = avearage_temp_value / 100 ;
+		avearage_fract_temp = (my_abs(avearage_temp_value)) % 100;
+		bmp->avearage_fract = avearage_fract_temp;
+
+		if( i <= No_OF_SAMPLES) i++;
+	}
+#endif
 

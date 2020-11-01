@@ -25,7 +25,11 @@ src/SPI/SPI.o: ../src/SPI/SPI.c ../src/SPI/SPI.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_tim.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_usart.h \
  E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
- E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h
+ E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h \
+ ../src/SPI/../BMP280/BMP280.h ../src/SPI/../BMP280/../I2C/I2C.h \
+ ../src/SPI/../BMP280/../I2C/../BMP280/BMP280.h \
+ ../src/SPI/../BMP280/../SPI/SPI.h \
+ ../src/SPI/../BMP280/../COMMON/common_var.h
 
 ../src/SPI/SPI.h:
 
@@ -82,3 +86,13 @@ E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_usart.h:
 E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/stm32f10x_wwdg.h:
 
 E:/STM32_ARM/MY_LIBRARIES/BMP280/StdPeriph_Driver/inc/misc.h:
+
+../src/SPI/../BMP280/BMP280.h:
+
+../src/SPI/../BMP280/../I2C/I2C.h:
+
+../src/SPI/../BMP280/../I2C/../BMP280/BMP280.h:
+
+../src/SPI/../BMP280/../SPI/SPI.h:
+
+../src/SPI/../BMP280/../COMMON/common_var.h:

@@ -15,17 +15,21 @@
 #include <stdlib.h>
 #include "../COMMON/common_var.h"
 
+// --------------------------------------------------------- //
 //select protocol
-#define BMP280_SPI 0
-#define BMP280_I2C 1
+#define BMP280_SPI 1
+#define BMP280_I2C 0
 
+// --------------------------------------------------------- //
 #define USE_STRING 1				// allow for preparing of string with temperature and pressure values
 #define BMP280_INCLUDE_STATUS 0		// allow for waiting up to sensor will be in standby mode (standby time)
 #define BMP280_ALTITUDE 	205 	// current sensor altitude above sea level at the measurement site [m]
 
+// --------------------------------------------------------- //
 #define BMP280_ADDR 		0xEC	// Sensor addres -> SDO pin is connected to GND
 //#define BMP280_ADDR 		0xEE	// Sensor addres -> SDO pin is connected to VCC
 
+// --------------------------------------------------------- //
 // Pressure oversampling ->  osrs_p[2:0] -> addres register 0xF4 bits: 2,3,4
 #define BMP280_SKIPPED			0	// Pressure oversampling skipped 	-> resolution 0
 #define BMP280_ULTRALOWPOWER	1	// Pressure oversampling x1			-> resolution 16
@@ -34,6 +38,7 @@
 #define BMP280_HIGHRES			4	// Pressure oversampling x8			-> resolution 19
 #define BMP280_ULTRAHIGHRES		5	// Pressure oversampling x16		-> resolution 20
 
+// --------------------------------------------------------- //
 // Temperature resolution -> osrs_t[2:0] -> addres register 0xF4 bits: 5,6,7
 #define BMP280_TEMPERATURE_SKIPPED 	0	//Temperature oversampling skipped
 #define BMP280_TEMPERATURE_16BIT 	1	//Temperature oversampling x 1
@@ -42,6 +47,7 @@
 #define BMP280_TEMPERATURE_19BIT 	4	//Temperature oversampling x 8
 #define BMP280_TEMPERATURE_20BIT 	5	//Temperature oversampling x 16
 
+// --------------------------------------------------------- //
 // IIR filter ->  filter[2:0]  -> addres register 0xF5 bits: 2, 3, 4
 #define BMP280_FILTER_OFF	0	// Filter OFF
 #define BMP280_FILTER_X2 	1	// Filter coefficient 2
@@ -49,11 +55,13 @@
 #define BMP280_FILTER_X8	3	// Filter coefficient 8
 #define BMP280_FILTER_X16 	4	// Filter coefficient 16
 
+// --------------------------------------------------------- //
 // Mode -> mode[1:0] -> addres register 0xF4 bits: 0,1
 #define BMP280_SLEEPMODE		0
 #define BMP280_FORCEDMODE		1
 #define BMP280_NORMALMODE		3
 
+// --------------------------------------------------------- //
 // t_standby time ->  t_sb[2:0] -> addres register 0xF5 bits: 5, 6, 7
 #define BMP280_STANDBY_MS_0_5	0
 #define BMP280_STANDBY_MS_62_5	1
@@ -64,37 +72,45 @@
 #define BMP280_STANDBY_MS_2000	6
 #define BMP280_STANDBY_MS_4000	7
 
+// --------------------------------------------------------- //
 //soft reset ->  reset[7:0] ->	If the value 0xB6 is written to the register,
 //								the device is reset using the complete power-on-reset procedure
 #define BMP280_SOFTWARE_RESET 0xB6
 
+// --------------------------------------------------------- //
 // definisions of minimum and maximum rav values for temperature and pressure
 #define BMP280_ST_ADC_T_MIN	(int32_t)0x00000
 #define BMP280_ST_ADC_T_MAX (int32_t)0xFFFF0
 #define BMP280_ST_ADC_P_MIN (int32_t)0x00000
 #define BMP280_ST_ADC_P_MAX (int32_t)0xFFFF0
 
-
+// --------------------------------------------------------- //
 #define BMP280_MEASURING_STATUS 0x1
 #define BMP280_IM_UPDATE_STATUS 0x8
 
-
+// --------------------------------------------------------- //
 #define SIZE_OF_CONF_UNION 24
 
+// --------------------------------------------------------- //
+// calculation of average temperature
+#define CALCULATION_AVERAGE_TEMP 1
+#define No_OF_SAMPLES 10
 
-typedef enum {T_lower_limit = 1, T_over_limit = 2, P_lower_limit = 3, P_over_limit = 4 } ERR_BOUNDARIES;
-typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
-typedef enum {im_update = 1, measuring= 2} STATUS;
-
-
+// --------------------------------------------------------- //
 // 3-wire SPI interface -> spi3w_en[0]  -> addres register 0xF5 bits: 0
 #if BMP280_SPI
 #define BMP280_SPI_3_WIRE	1
 #endif
 
+// --------------------------------------------------------- //
+typedef enum {T_lower_limit = 1, T_over_limit = 2, P_lower_limit = 3, P_over_limit = 4 } ERR_BOUNDARIES;
+typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
+typedef enum {im_update = 1, measuring= 2} STATUS;
 
 
 
+
+// --------------------------------------------------------- //
 typedef union {
 	uint8_t bt[2];
 	struct {
@@ -110,6 +126,7 @@ typedef union {
 
 extern CONF conf_BMP280;
 
+// --------------------------------------------------------- //
 typedef union {
 	uint8_t  bt[SIZE_OF_CONF_UNION];
 	uint16_t bt2[SIZE_OF_CONF_UNION/2];
@@ -149,12 +166,17 @@ typedef struct {
 	int8_t 	t1;				// before comma
 	uint8_t t2;				// after comma
 
+#if CALCULATION_AVERAGE_TEMP
+	int8_t avearage_cel;
+	uint8_t avearage_fract;
+	int16_t smaples_of_temp[No_OF_SAMPLES];
+#endif
+
 #if USE_STRING
-	char temp2str[7];		// tepmerature as string
+	char temp2str[6];		// tepmerature as string
 #endif
 
 	// ----- pressure -----
-
 	uint32_t 	preasure;		// calue of calculated pressure
 	int16_t 	p1;				// before comma
 	//uint8_t 	p2;				// after comma
@@ -171,7 +193,7 @@ typedef struct {
 extern TBMP bmp;
 
 
-
+// --------------------------------------------------------- //
 uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp);
 uint8_t BMP280_ReadTP(TBMP *bmp);
 

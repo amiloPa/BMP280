@@ -3,7 +3,7 @@
   * @file    main.c
   * @author  Ac6
   * @version V1.0
-  * @date    01-December-2013
+  * @date    31-October-2020
   * @brief   Default main function.
   ******************************************************************************
 */
@@ -39,6 +39,8 @@ int main(void)
 	RCC_Conf();
 	SysTick_Conf();
 	GPIO_Conf();
+	UART_Conf(UART_BAUD);
+	NVIC_Conf();
 
 #if BMP280_I2C
 	I2C_Conf(400);
@@ -48,18 +50,11 @@ int main(void)
 	SPI_Conf();
 #endif
 
-	UART_Conf(UART_BAUD);
-
-	NVIC_Conf();
-
-
-
 	do
 	{
 		result_BMP_conf = BMP280_Conf(&conf_BMP280, &bmp);
 	}
 	while(result_BMP_conf == 3);
-
 
 
 	while (1)
@@ -129,10 +124,6 @@ int main(void)
 					uart_puts("measure take = ");
 					uart_puts(measure_time);
 					uart_puts("ms");
-	//				uart_puts("    ");
-	//				uart_puts("measure = ");
-	//				uart_puts(source_time_tab);
-	//				uart_puts("ms");
 					uart_puts("\n\r");
 				}
 			}
@@ -147,33 +138,33 @@ void SysTick_Conf (void)
 
 #define SysTick_Frequency 9000000 // 9MHz
 
-//	SysTick_Config(F_PCLK2/8/1000);
-//	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;
-	SysTick_Config(8000000/800);
+	SysTick_Config(F_PCLK2/8/1000);
+	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;
+
 
 }
 
 void RCC_Conf(void)
 {
-  // Reset ustawien RCC
+  // RCC setting reset
   RCC_DeInit();
 
-  // Wlacz HSE
+  // Turn on HSE
   RCC_HSEConfig(RCC_HSE_ON);
 
-  // Czekaj az HSE bedzie gotowy
+  // Wait up to HSE will be ready
   HSEStartUpStatus = RCC_WaitForHSEStartUp();
 
   if(HSEStartUpStatus == SUCCESS)
   {
 	  /*
-	   * wprowadzenie opoznien jest (waitstate) dla wy¿szych czêstotliwoœci taktowania
-	   * jest spowodowane tym, ¿e maksymalna czêstotliwoœæ z jak¹ przeprowadzana
-	   * jest komunikacja z pamiecia Flash moze wynosic 24 MHz
+	   * the introduction of delays is (waitstate) for higher clock rates
+	   * is due to the maximum frequency with which it is performed
+	   * communication with Flash memory can be 24 MHz
 	   */
 	  FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
 
-	  // zwloka dla pamieci Flash
+	  // wait for flash memory
 	  FLASH_SetLatency(FLASH_Latency_2);
 
 	  // HCLK = SYSCLK
@@ -182,58 +173,51 @@ void RCC_Conf(void)
 	  // PCLK2 = HCLK
 	  RCC_PCLK2Config(RCC_HCLK_Div1);
 
-//	  // PCLK1 = HCLK/2
-//	  RCC_PCLK1Config(RCC_HCLK_Div2);
-//
-//	  // PLLCLK = 8MHz * 9 = 72 MHz
-//	  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
-//
-//	  // Wlacz PLL
-//	  RCC_PLLCmd(ENABLE);
-//
-//	  // Czekaj az PLL poprawnie sie uruchomi
-//	  while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
-//
-//	  // PLL bedzie zrodlem sygnalu zegarowego
-//	  RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-//
-//	  // Czekaj az PLL bedzie sygnalem zegarowym systemu
-//	  while(RCC_GetSYSCLKSource() != 0x08);
+	  // PCLK1 = HCLK/2
+	  RCC_PCLK1Config(RCC_HCLK_Div2);
 
-	  //W³¹czenie systemu nadzoru sygna³u taktuj¹cego
+	  // PLLCLK = 8MHz * 9 = 72 MHz
+	  RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);
+
+	  // Turn on PLL
+	  RCC_PLLCmd(ENABLE);
+
+	  // Wait up to PLL will be ready
+	  while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET);
+
+	  // Select PLL as source of clock
+	  RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+
+	  // Wait up to PLL will be the source of clock
+	  while(RCC_GetSYSCLKSource() != 0x08);
+
+	  // Turn on W³¹czenie clock signal supervision system
 	  //RCC_ClockSecuritySystemCmd(ENABLE);
 
-	  RCC_SYSCLKConfig(RCC_SYSCLKSource_HSE);
   }
 
-//  Wlacz taktowanie GPIOB
-//  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 }
 
 
 void NVIC_Conf(void)
 {
-  // Tablica wektorow przerwan
+
   NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x0);
 }
 
 
 void GPIO_Conf(void)
 {
+	// Set pin PC13 as blinking led
 	GPIO_InitTypeDef GPIOInit;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-//	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
 
 	GPIO_StructInit(&GPIOInit);
 
-	//Definicja pinów dla I2C GPIOB_PIN6 - SCL, GPIOB_PIN7 - SDA
 	GPIOInit.GPIO_Pin = GPIO_Pin_13;
 	GPIOInit.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIOInit.GPIO_Speed = GPIO_Speed_50MHz;
 	 GPIO_Init(GPIOC, &GPIOInit);
-
-
 
 }
 
