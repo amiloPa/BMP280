@@ -36,10 +36,7 @@ HSEStartUpStatus    0x1               src/main.o
 bmp                 0x60              src/BMP280/BMP280.o
 __lock___arc4random_mutex
                     0x1               d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17.0.201812190825/tools/compiler/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7-m\libc.a(lib_a-lock.o)
-result_time         0x2               src/main.o
 UART_TxHead         0x1               src/UART/UART.o
-flag                0x1               src/main.o
-allow_for_measure   0x4               src/main.o
 __lock___env_recursive_mutex
                     0x1               d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17.0.201812190825/tools/compiler/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7-m\libc.a(lib_a-lock.o)
 __lock___sinit_recursive_mutex
@@ -50,7 +47,6 @@ __lock___malloc_recursive_mutex
 source_time         0x4               src/BMP280/BMP280.o
 UART_TxTail         0x1               src/UART/UART.o
 conf_BMP280         0x2               src/BMP280/BMP280.o
-start_measure       0x4               src/main.o
 measure_time        0xf               src/main.o
 UART_TxBuf          0x2               src/UART/UART.o
 __lock___at_quick_exit_mutex
@@ -3362,7 +3358,6 @@ Discarded input sections
  .group         0x00000000        0xc src/main.o
  .group         0x00000000        0xc src/main.o
  .text          0x00000000        0x0 src/main.o
- .data          0x00000000        0x0 src/main.o
  .debug_macro   0x00000000      0xa6c src/main.o
  .debug_macro   0x00000000       0x56 src/main.o
  .debug_macro   0x00000000       0x22 src/main.o
@@ -4149,8 +4144,10 @@ LOAD d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17
  *(.data)
  .data          0x20000000       0x14 StdPeriph_Driver/src/stm32f10x_rcc.o
  .data          0x20000014        0x1 src/BMP280/BMP280.o
+ .data          0x20000015        0x1 src/main.o
+                0x20000015                flag
  *(.data*)
- *fill*         0x20000015        0x3 
+ *fill*         0x20000016        0x2 
  .data.impure_data
                 0x20000018      0x428 d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17.0.201812190825/tools/compiler/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7-m\libc.a(lib_a-impure.o)
  .data.__atexit_recursive_mutex
@@ -4169,29 +4166,28 @@ LOAD d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17
  *(.bss)
  .bss           0x20000444       0x1c d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17.0.201812190825/tools/compiler/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v7-m/crtbegin.o
  .bss           0x20000460        0x4 src/BMP280/BMP280.o
- .bss           0x20000464        0x3 src/main.o
+ .bss           0x20000464        0xd src/main.o
+                0x20000464                start_measure
+                0x20000468                allow_for_measure
+                0x2000046c                result_time
  *(.bss*)
  *(COMMON)
- *fill*         0x20000467        0x1 
- COMMON         0x20000468       0x66 src/BMP280/BMP280.o
-                0x20000468                bmp
-                0x200004c8                source_time
-                0x200004cc                conf_BMP280
- *fill*         0x200004ce        0x2 
- COMMON         0x200004d0       0x28 src/UART/UART.o
-                0x200004d0                UART_TxHead
-                0x200004d1                ascii_line
-                0x200004d2                UART_TxTail
-                0x200004d4                UART_TxBuf
-                0x200004d6                UART_RxHead
-                0x200004d7                UART_RxTail
-                0x200004d8                UART_RxBuf
- COMMON         0x200004f8       0x1f src/main.o
-                0x200004f8                HSEStartUpStatus
-                0x200004fa                result_time
-                0x200004fc                flag
-                0x20000500                allow_for_measure
-                0x20000504                start_measure
+ *fill*         0x20000471        0x3 
+ COMMON         0x20000474       0x66 src/BMP280/BMP280.o
+                0x20000474                bmp
+                0x200004d4                source_time
+                0x200004d8                conf_BMP280
+ *fill*         0x200004da        0x2 
+ COMMON         0x200004dc       0x28 src/UART/UART.o
+                0x200004dc                UART_TxHead
+                0x200004dd                ascii_line
+                0x200004de                UART_TxTail
+                0x200004e0                UART_TxBuf
+                0x200004e2                UART_RxHead
+                0x200004e3                UART_RxTail
+                0x200004e4                UART_RxBuf
+ COMMON         0x20000504       0x13 src/main.o
+                0x20000504                HSEStartUpStatus
                 0x20000508                measure_time
  *fill*         0x20000517        0x1 
  COMMON         0x20000518       0x21 d:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.17.0.201812190825/tools/compiler/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v7-m\libc.a(lib_a-lock.o)
@@ -4355,7 +4351,7 @@ OUTPUT(BMP280.elf elf32-littlearm)
  .debug_ranges  0x000005f0       0x28 src/system_stm32f10x.o
  .debug_ranges  0x00000618       0x20 startup/startup_stm32.o
 
-.debug_macro    0x00000000     0xe799
+.debug_macro    0x00000000     0xe798
  .debug_macro   0x00000000      0x18b StdPeriph_Driver/src/misc.o
  .debug_macro   0x0000018b       0x56 StdPeriph_Driver/src/misc.o
  .debug_macro   0x000001e1       0x22 StdPeriph_Driver/src/misc.o
@@ -4418,9 +4414,9 @@ OUTPUT(BMP280.elf elf32-littlearm)
  .debug_macro   0x0000e16b      0x10e src/UART/UART.o
  .debug_macro   0x0000e279       0x8d src/UART/UART.o
  .debug_macro   0x0000e306       0x2e src/UART/UART.o
- .debug_macro   0x0000e334      0x2c7 src/main.o
- .debug_macro   0x0000e5fb       0x16 src/main.o
- .debug_macro   0x0000e611      0x188 src/system_stm32f10x.o
+ .debug_macro   0x0000e334      0x2c6 src/main.o
+ .debug_macro   0x0000e5fa       0x16 src/main.o
+ .debug_macro   0x0000e610      0x188 src/system_stm32f10x.o
 
 .debug_line     0x00000000     0x5a60
  .debug_line    0x00000000      0x5c5 StdPeriph_Driver/src/misc.o
@@ -4437,7 +4433,7 @@ OUTPUT(BMP280.elf elf32-littlearm)
  .debug_line    0x000053e9      0x5fb src/system_stm32f10x.o
  .debug_line    0x000059e4       0x7c startup/startup_stm32.o
 
-.debug_str      0x00000000    0x539b1
+.debug_str      0x00000000    0x539ab
  .debug_str     0x00000000    0x4d2bd StdPeriph_Driver/src/misc.o
                               0x4d42e (size before relaxing)
  .debug_str     0x0004d2bd      0x812 StdPeriph_Driver/src/stm32f10x_flash.o
@@ -4458,11 +4454,11 @@ OUTPUT(BMP280.elf elf32-littlearm)
                               0x509c1 (size before relaxing)
  .debug_str     0x00053344      0x4b7 src/UART/UART.o
                               0x50891 (size before relaxing)
- .debug_str     0x000537fb      0x107 src/main.o
-                              0x50e62 (size before relaxing)
- .debug_str     0x00053902       0x86 src/system_stm32f10x.o
+ .debug_str     0x000537fb      0x101 src/main.o
+                              0x50e5c (size before relaxing)
+ .debug_str     0x000538fc       0x86 src/system_stm32f10x.o
                               0x4d33a (size before relaxing)
- .debug_str     0x00053988       0x29 startup/startup_stm32.o
+ .debug_str     0x00053982       0x29 startup/startup_stm32.o
                                  0x50 (size before relaxing)
 
 .comment        0x00000000       0x7f

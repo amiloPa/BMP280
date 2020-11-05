@@ -18,17 +18,21 @@
 			
 ErrorStatus HSEStartUpStatus;
 #define F_PCLK2  72000000
+#define MEASURE_PERIOD 1000 // measure period in ms
+
 
 void RCC_Conf(void);
 void GPIO_Conf(void);
 void NVIC_Conf(void);
 void SysTick_Conf(void);
 
-volatile uint8_t flag;
-uint32_t start_measure;
-uint32_t allow_for_measure;
-uint16_t result_time;
+volatile uint8_t flag = 1;
+uint32_t start_measure = 0;
+uint32_t allow_for_measure = 0;
+uint16_t result_time = 0;
 char measure_time[15];
+
+
 
 int main(void)
 {
@@ -135,13 +139,8 @@ int main(void)
 
 void SysTick_Conf (void)
 {
-
-#define SysTick_Frequency 9000000 // 9MHz
-
 	SysTick_Config(F_PCLK2/8/1000);
 	SysTick->CTRL &= ~SysTick_CTRL_CLKSOURCE_Msk;
-
-
 }
 
 void RCC_Conf(void)
@@ -228,7 +227,7 @@ __attribute__((interrupt)) void SysTick_Handler(void)
 	static uint16_t counter = 0;
 	static uint8_t status = 0;
 
-	if(counter == 1000)
+	if(counter == MEASURE_PERIOD)
 	{
 		allow_for_measure = source_time;
 		flag = 1;
