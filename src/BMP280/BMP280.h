@@ -17,8 +17,8 @@
 
 // --------------------------------------------------------- //
 //select protocol
-#define BMP280_SPI 0
-#define BMP280_I2C 1
+#define BMP280_SPI 1
+#define BMP280_I2C 0
 
 // --------------------------------------------------------- //
 #define USE_STRING 1				// allow for preparing of string with temperature and pressure values
@@ -79,14 +79,14 @@
 
 // --------------------------------------------------------- //
 // definisions of minimum and maximum rav values for temperature and pressure
-#define BMP280_ST_ADC_T_MIN	(int32_t)0x00000
-#define BMP280_ST_ADC_T_MAX (int32_t)0xFFFF0
-#define BMP280_ST_ADC_P_MIN (int32_t)0x00000
-#define BMP280_ST_ADC_P_MAX (int32_t)0xFFFF0
+#define BMP280_ST_ADC_T_MIN	(int32_t)0x000000
+#define BMP280_ST_ADC_T_MAX (int32_t)0x800000
+#define BMP280_ST_ADC_P_MIN (int32_t)0x000000
+#define BMP280_ST_ADC_P_MAX (int32_t)0x800000
 
 // --------------------------------------------------------- //
-#define BMP280_MEASURING_STATUS 0x1
-#define BMP280_IM_UPDATE_STATUS 0x8
+#define BMP280_MEASURING_STATUS 0x8
+#define BMP280_IM_UPDATE_STATUS 0x1
 
 // --------------------------------------------------------- //
 #define SIZE_OF_CONF_UNION 24
@@ -105,10 +105,6 @@
 // --------------------------------------------------------- //
 typedef enum {T_lower_limit = 1, T_over_limit = 2, P_lower_limit = 3, P_over_limit = 4 } ERR_BOUNDARIES;
 typedef enum {calib_reg = 1, config_reg = 2, both = 3}ERR_CONF;
-typedef enum {im_update = 1, measuring= 2} STATUS;
-
-
-
 
 // --------------------------------------------------------- //
 typedef union {

@@ -98,7 +98,7 @@ int main(void)
 						uart_puts(" Measured raw value of temperature is lower than minimum value (0x00000),");
 						break;
 					case T_over_limit:
-						uart_puts(" Measured raw value of temperature is over than maximum value (0xFFFF0),");
+						uart_puts(" Measured raw value of temperature is over than maximum value (0x800000),");
 						break;
 					}
 
@@ -108,7 +108,7 @@ int main(void)
 						uart_puts(" Measured raw value of pressure is lower than minimum value (0x00000),");
 						break;
 					case P_over_limit:
-						uart_puts(" Measured raw value of pressure is over than maximum value (0xFFFF0),");
+						uart_puts(" Measured raw value of pressure is over than maximum value (0x800000),");
 						break;
 					}
 					break;
@@ -120,10 +120,12 @@ int main(void)
 					result_time = source_time - start_measure;
 
 					uart_puts(bmp.temp2str);
+					uart_puts("C");
 					uart_puts("  ");
 					uart_puts(bmp.pressure2str);
-
+					uart_puts("hPa");
 					uart_puts("  ");
+
 					itoa(result_time, measure_time,10);
 					uart_puts("measure take = ");
 					uart_puts(measure_time);

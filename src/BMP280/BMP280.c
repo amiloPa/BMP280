@@ -18,9 +18,9 @@ void get_status (TBMP *bmp);				// read statuses of sensor
 uint8_t bmp280_compute_meas_time(void);		// measurement time in milliseconds for the active configuration
 void pressure_at_sea_level(TBMP *bmp);		// calculating pressure reduced to sea level
 
-void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data);	// read data from sensor
-void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data);	// write data to sensor
-uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp);							// write configuration and check if saved configuration is equal to set
+void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t *Data);			// read data from sensor
+void BMP280_write_data(uint8_t SLA, uint8_t register_addr, uint8_t size, uint8_t *Data);			// write data to sensor
+uint8_t read_compensation_parameter_write_configuration_and_check_it(CONF *sensor, TBMP *bmp);		// write configuration and check if saved configuration is equal to set
 
 #if CALCULATION_AVERAGE_TEMP
 	void calculation_average_temp(TBMP *bmp);	// calculate average temperature, No of samples to calculations is taken from No_OF_SAMPLES
@@ -53,7 +53,7 @@ uint8_t BMP280_Conf (CONF *sensor, TBMP *bmp)
 
 	do
 	{
-		result_of_check = write_configuration_and_check_it(sensor, bmp);
+		result_of_check = read_compensation_parameter_write_configuration_and_check_it(sensor, bmp);
 		counter++;
 	}
 	while((result_of_check) && (counter < 3));
@@ -84,13 +84,13 @@ uint8_t BMP280_ReadTP(TBMP *bmp)
 
 #endif
 
-	BMP280_read_data(BMP280_ADDR, 0xF7, 6, (uint8_t *)&temp);	// read set register
+	BMP280_read_data(BMP280_ADDR, 0xF7, 6, (uint8_t *)&temp);	// read data register
 
-	bmp->adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);;
-	bmp->adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);;
+	bmp->adc_T = (temp[3] << 12) | (temp[4] << 4) | (temp[5] >> 4);
+	bmp->adc_P = (temp[0] << 12) | (temp[1] << 4) | (temp[2] >> 4);
 
 
-	// ----- check boundaries -----
+//	// ----- check boundaries -----
 	check_boundaries(bmp);
 
 	// ----- if raw values are lower or over the limits, function is intermittent and returning 3  -----
@@ -380,7 +380,7 @@ void BMP280_read_data(uint8_t SLA, uint8_t register_addr,  uint8_t size, uint8_t
 /****************************************************************************/
 /*     write configuration and check if saved configuration is equal to set */
 /****************************************************************************/
-uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
+uint8_t read_compensation_parameter_write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
 {
 	uint8_t buf[2];
 	uint8_t i;
@@ -446,7 +446,7 @@ uint8_t write_configuration_and_check_it (CONF *sensor, TBMP *bmp)
 #if CALCULATION_AVERAGE_TEMP
 	void calculation_average_temp(TBMP *bmp)
 	{
-		int16_t avearage_temp_value = 0;
+		int32_t avearage_temp_value = 0;
 		static uint8_t i = 1;
 		uint8_t k;
 		uint8_t avearage_fract_temp;
